@@ -175,3 +175,19 @@ int libtypec_get_alternate_modes (int recipient, int conn_num, struct altmode_da
     cur_libtypec_os_backend->get_alternate_modes(recipient,conn_num,alt_mode_data);
     
 }
+
+/**
+ * This function shall be used to get the Connector status/ 
+ * 
+ * \param  conn_num Indicates which connector's status needs to be retrived
+ * 
+ * \returns 0 on success
+ */
+int libtypec_get_connector_status (int conn_num,struct libtypec_connector_status *conn_sts)
+{
+    if(!cur_libtypec_os_backend)
+        return -EIO;
+
+    cur_libtypec_os_backend->get_connector_status_ops(conn_num,conn_sts);
+    
+}

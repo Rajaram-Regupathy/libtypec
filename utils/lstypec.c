@@ -7,6 +7,7 @@
 
 struct libtypec_capabiliy_data  get_cap_data;
 struct libtypec_connector_cap_data conn_data;
+struct libtypec_connector_status conn_sts;
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
 
@@ -113,11 +114,15 @@ int main(void) {
         ret = libtypec_get_alternate_modes(AM_CONNECTOR,i,am_data);
    
         print_alternate_mode_data(AM_CONNECTOR,ret,am_data);
+       
+	ret =  libtypec_get_connector_status(i,&conn_sts);
 
-        ret = libtypec_get_alternate_modes(AM_SOP,i,am_data);
+        if(conn_sts.connect_sts)
+        {
+            ret = libtypec_get_alternate_modes(AM_SOP,i,am_data);
 
-        print_alternate_mode_data(AM_SOP,ret,am_data);
-
+            print_alternate_mode_data(AM_SOP,ret,am_data);
+        }
     }
 
 }

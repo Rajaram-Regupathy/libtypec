@@ -277,8 +277,24 @@ static int libtypec_sysfs_get_cable_properties_ops (int conn_num,char *cbl_prop_
 
 }
 
-static int libtypec_sysfs_get_connector_status_ops (int conn_num,char *conn_sts_data)
+static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec_connector_status *conn_sts)
 {
+	struct stat sb;
+	struct dirent *port_entry;
+	char path_str[512], port_content[512];
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
+
+ 	if (lstat(path_str, &sb) == -1) {
+		printf("Incorrect connector number : failed to open, %s",path_str);
+		return -1;
+    	}
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner",conn_num,conn_num);
+
+	conn_sts->connect_sts = (lstat(path_str, &sb) == -1) ? 0:1;
+
+	return 0;
 
 }
 
@@ -293,5 +309,5 @@ const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
     .get_current_cam_ops = NULL,
     .get_pdos_ops =  NULL,
     .get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
-    .get_connector_status_ops = NULL,
+    .get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
 };

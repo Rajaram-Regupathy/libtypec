@@ -48,7 +48,7 @@ struct libtypec_os_backend {
 
     int (*get_cable_properties_ops) (int conn_num,char *cbl_prop_data);
 
-    int (*get_connector_status_ops) (int conn_num,char *conn_sts_data);
+    int (*get_connector_status_ops) (int conn_num, struct libtypec_connector_status *conn_sts);
 
 };
 

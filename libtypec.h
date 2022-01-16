@@ -52,6 +52,21 @@ struct altmode_data {
 	unsigned long vdo;
 };
 
+struct libtypec_connector_status {
+	unsigned    sts_change:16;
+	unsigned    pwr_op_mode:3;
+    unsigned    connect_sts:1;
+    unsigned    pwr_dir:1;
+    unsigned    ptnr_flags:8;
+    unsigned    ptnr_type:3;
+    unsigned long rdo;
+	unsigned    bat_chrg_cap_sts:2;
+    unsigned    cap_ltd_reason:4;
+    unsigned    bcdPDVer_op_mode:16;
+    unsigned    reserved_1:10;
+    unsigned    reserved_2;
+} __packed;
+
 
 #define LIBTYPEC_MAJOR_VERSION 0
 #define LIBTYPEC_MINOR_VERSION 1
@@ -86,7 +101,6 @@ int libtypec_get_cam_supported (int conn_num, char *cam_data);
 int libtypec_get_current_cam (char *cur_cam_data);
 int libtypec_get_pdos (int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, char *pdo_data);
 int libtypec_get_cable_properties (int conn_num, char *cbl_prop_data);
-int libtypec_get_connector_status (int conn_num, char *conn_sts_data);
-
+int libtypec_get_connector_status (int conn_num, struct libtypec_connector_status *conn_sts);
 
 #endif /*LIBTYPEC_H*/
