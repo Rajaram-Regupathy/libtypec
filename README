@@ -1,14 +1,11 @@
 libtypec
 ++++++++
 
-USB-Type C and USB Power Delivery systems is a complex ecosystem
-with multiple specification versions, platform designs and 
-microcontroller vendors that manages data, power and display.
+USB-Type C and USB Power Delivery systems are with multiple specification versions, platform designs and microcontroller vendors
+to manage data, power and display.
 
-This library defines a generic way for userspace System Software on
-Linux, Android, Chrome OS or other OSes to build developer tools and
-other management applications for USB-Type C and USB Power Delivery 
-class devices.
+This library defines a generic way for userspace System Software on Linux, Android, Chrome OS or Other OSes to build developer tools or
+other management applications for USB-Type C and USB Power Delivery class devices.
 
 Build Procedure
 +++++++++++++++
