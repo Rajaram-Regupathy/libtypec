@@ -65,7 +65,7 @@ struct libtypec_connector_status {
     unsigned    bcdPDVer_op_mode:16;
     unsigned    reserved_1:10;
     unsigned    reserved_2;
-} __packed;
+};
 
 
 #define LIBTYPEC_MAJOR_VERSION 0
