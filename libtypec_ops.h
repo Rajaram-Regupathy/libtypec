@@ -3,7 +3,8 @@
  * @author Rajaram Regupathy
  * @brief 
  * 
- * Copyright (c) 2021 Rajaram Regupathy <>
+ * @copyright 
+ * Copyright (c) 2021 Rajaram Regupathy <rajaram.regupathy@gmail.com>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
