@@ -1,20 +1,25 @@
+/*
+This file is part of libtypec.
+
+libtypec  is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+libtypec is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with libtypec that can be found in the LICENSE file.  
+If not, see <http://www.gnu.org/licenses/>.
+*/
+// SPDX-License-Identifier: GPL-3.0 or later
 /**
  * @file libtypec.c
  * @author Rajaram Regupathy <rajaram.regupathy@gmail.com>
  * @brief Core functions for libtypec
- * @version 0.1
- * 
- * @copyright 
- * Copyright (c) 2021 Rajaram Regupathy <rajaram.regupathy@gmail.com>
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- * 
  */
 #include <linux/magic.h>
 #include <linux/types.h>
