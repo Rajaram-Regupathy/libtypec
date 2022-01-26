@@ -109,6 +109,73 @@ static short get_bcd_from_rev_file(char * path)
 
 	return bcd;
 }
+static int get_cable_plug_type(char * path)
+{
+	char buf[64];
+	char * pEnd;
+	short ret = PLUG_TYPE_OTH; /*not USB*/
+
+	FILE *fp = fopen(path,"r");
+
+	fgets(buf,64,fp);
+	
+	pEnd = strstr(buf,"type-c");
+ 
+ 	if (pEnd != NULL) {
+
+		pEnd = strstr(buf,"type-a");
+ 		
+		if (pEnd != NULL) 
+				ret = PLUG_TYPE_B; 
+		else
+				ret = PLUG_TYPE_A;
+	}
+	else
+		ret = PLUG_TYPE_C;
+
+	fclose(fp);
+
+	return ret;
+
+}
+
+static int get_cable_type(char * path)
+{
+	char buf[64];
+	char * pEnd;
+	short ret = CABLE_TYPE_PASSIVE;
+
+	FILE *fp = fopen(path,"r");
+
+	fgets(buf,64,fp);
+	
+	pEnd = strstr(buf,"passive");
+ 
+ 	if (pEnd != NULL) 
+		ret = CABLE_TYPE_ACTIVE;
+
+	fclose(fp);
+
+	return ret;
+
+}
+
+static int get_cable_mode_support(char * path)
+{
+	char buf[64];
+	short ret ;
+
+	FILE *fp = fopen(path,"r");
+
+	fgets(buf,64,fp);
+	
+	ret = (buf[0] -'0')?1:0;
+	
+	fclose(fp);
+
+	return ret;
+
+}
 
 static int libtypec_sysfs_init (char **session_info)
 {
@@ -281,8 +348,35 @@ static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, stru
 
 }
 
-static int libtypec_sysfs_get_cable_properties_ops (int conn_num,char *cbl_prop_data)
+static int libtypec_sysfs_get_cable_properties_ops (int conn_num,struct libtypec_cable_property *cbl_prop_data)
 {
+	struct stat sb;
+	struct dirent *port_entry;
+	char path_str[512], port_content[512];
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable",conn_num);
+
+	/* No cable indentified or connector number is incorrect */
+ 	if (lstat(path_str, &sb) == -1) 
+		return -1;
+
+	sprintf(port_content,"%s/%s",path_str ,"plug_type");
+
+	cbl_prop_data->plug_end_type = get_cable_plug_type(port_content);
+
+	memset(port_content,0,512);
+
+	sprintf(port_content,"%s/%s",path_str ,"type");
+
+	cbl_prop_data->cable_type = get_cable_type(port_content);
+
+	memset(port_content,0,512);
+
+	sprintf(port_content,SYSFS_TYPEC_PATH "port%d-plug%d/%s",conn_num,conn_num ,"number_of_alternate_modes");
+
+	cbl_prop_data->mode_support = get_cable_mode_support(port_content);
+
+	return 0;
 
 }
 
@@ -297,7 +391,7 @@ static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec
  	if (lstat(path_str, &sb) == -1) {
 		printf("Incorrect connector number : failed to open, %s",path_str);
 		return -1;
-    	}
+    }
 
 	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner",conn_num,conn_num);
 

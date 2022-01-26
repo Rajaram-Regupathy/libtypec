@@ -50,7 +50,7 @@ struct libtypec_os_backend {
 
     int (*get_pdos_ops) (int conn_num, int partner,int offset, int num_pdo,int src_snk,int type,char *pdo_data);
 
-    int (*get_cable_properties_ops) (int conn_num,char *cbl_prop_data);
+    int (*get_cable_properties_ops) (int conn_num,struct libtypec_cable_property *cbl_prop_data);
 
     int (*get_connector_status_ops) (int conn_num, struct libtypec_connector_status *conn_sts);
 

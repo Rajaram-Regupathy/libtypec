@@ -70,6 +70,18 @@ struct libtypec_connector_status {
     unsigned    reserved_2;
 };
 
+struct libtypec_cable_property {
+	unsigned short  speed_supported;
+    unsigned char   current_capability;
+    unsigned        vbus_support:1;
+    unsigned        cable_type:1;
+    unsigned        directionality:1;
+    unsigned        plug_end_type:2;
+    unsigned        mode_support:1;
+    unsigned        reserved_1:2;
+    unsigned        latency:4;
+    unsigned        reserved_2:4;
+};
 
 #define LIBTYPEC_MAJOR_VERSION 0
 #define LIBTYPEC_MINOR_VERSION 1
@@ -80,7 +92,6 @@ struct libtypec_connector_status {
 #define LIBTYPEC_INTF_INDEX 3
 #define LIBTYPEC_SESSION_MAX_INDEX 4
 
-
 #define OPR_MODE_RP_ONLY 0
 #define OPR_MODE_RD_ONLY 1
 #define OPR_MODE_DRP_ONLY 2
@@ -89,6 +100,14 @@ struct libtypec_connector_status {
 #define AM_SOP 1
 #define AM_SOP_PR 2
 #define AM_SOP_DPR 3
+
+#define PLUG_TYPE_A 0
+#define PLUG_TYPE_B 1
+#define PLUG_TYPE_C 2
+#define PLUG_TYPE_OTH 3
+
+#define CABLE_TYPE_PASSIVE 0
+#define CABLE_TYPE_ACTIVE 1
 
 int libtypec_init(char **session_info);
 int libtypec_exit(void);
@@ -103,7 +122,7 @@ int libtypec_get_alternate_modes (int recipient, int conn_num, struct altmode_da
 int libtypec_get_cam_supported (int conn_num, char *cam_data);
 int libtypec_get_current_cam (char *cur_cam_data);
 int libtypec_get_pdos (int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, char *pdo_data);
-int libtypec_get_cable_properties (int conn_num, char *cbl_prop_data);
+int libtypec_get_cable_properties (int conn_num, struct libtypec_cable_property *cbl_prop_data);
 int libtypec_get_connector_status (int conn_num, struct libtypec_connector_status *conn_sts);
 
 #endif /*LIBTYPEC_H*/

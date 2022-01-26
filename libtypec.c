@@ -185,6 +185,21 @@ int libtypec_get_alternate_modes (int recipient, int conn_num, struct altmode_da
     cur_libtypec_os_backend->get_alternate_modes(recipient,conn_num,alt_mode_data);
     
 }
+/**
+ * This function shall be used to get the Cable Property of a connector 
+ * 
+ * \param  conn_num Indicates which connector's status needs to be retrived
+ * 
+ * \returns 0 on success
+ */
+int libtypec_get_cable_properties (int conn_num,struct libtypec_cable_property *cbl_prop_data)
+{
+    if(!cur_libtypec_os_backend)
+        return -EIO;
+
+    cur_libtypec_os_backend->get_cable_properties_ops(conn_num,cbl_prop_data);
+    
+}
 
 /**
  * This function shall be used to get the Connector status/ 

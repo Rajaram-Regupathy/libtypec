@@ -29,6 +29,8 @@
 struct libtypec_capabiliy_data  get_cap_data;
 struct libtypec_connector_cap_data conn_data;
 struct libtypec_connector_status conn_sts;
+struct libtypec_cable_property cable_prop;
+
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
 
@@ -66,6 +68,20 @@ void print_conn_capability(struct libtypec_connector_cap_data conn_data)
     printf("\tOperation Mode:\t\t%s\n",opr_mode_str[conn_data.opr_mode]);
 
 }
+
+void print_cable_prop(struct libtypec_cable_property cable_prop,int conn_num)
+{
+    char *cable_type[] = {"Passive","Active","Invalid"};
+    char *cable_plug_type[] = {"USB Type A","USB Type B","USB Type C", "Non-USB Type","Invalid"};
+
+    printf("\tCable Property in Port %d:\n",conn_num);
+
+    printf("\t\tCable Type\t:\t%s\n",cable_type[cable_prop.cable_type]);
+
+    printf("\t\tCable Plug Type\t:\t%s\n",cable_plug_type[cable_prop.plug_end_type]);
+
+}
+
 void  print_alternate_mode_data(int recepient,int num_mode,struct altmode_data *am_data)
 {
 
@@ -130,13 +146,18 @@ int main(void) {
 
         print_conn_capability(conn_data);
 
+        ret = libtypec_get_cable_properties(i,&cable_prop);
+
+        if(ret>=0)
+            print_cable_prop(cable_prop,i);
+
         printf("\tAlternate Modes Supported:\n");
 
         ret = libtypec_get_alternate_modes(AM_CONNECTOR,i,am_data);
    
         print_alternate_mode_data(AM_CONNECTOR,ret,am_data);
        
-	ret =  libtypec_get_connector_status(i,&conn_sts);
+	    ret =  libtypec_get_connector_status(i,&conn_sts);
 
         if(conn_sts.connect_sts)
         {
