@@ -202,7 +202,7 @@ int libtypec_get_cable_properties (int conn_num,struct libtypec_cable_property *
 }
 
 /**
- * This function shall be used to get the Connector status/ 
+ * This function shall be used to get the Connector status 
  * 
  * \param  conn_num Indicates which connector's status needs to be retrived
  * 

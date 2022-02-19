@@ -26,12 +26,8 @@
 #include <stdlib.h> 
 #include <sys/stat.h>
 
-
 #define MAX_PORT_STR 7 /* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
-
-
-
 
 static unsigned long get_svid_from_path(char * path)
 {
@@ -121,12 +117,21 @@ static int get_cable_plug_type(char * path)
 	
 	pEnd = strstr(buf,"type-c");
  
- 	if (pEnd != NULL) {
+ 	if (pEnd == NULL) {
 
 		pEnd = strstr(buf,"type-a");
  		
-		if (pEnd != NULL) 
+		if (pEnd == NULL) 
+		{
+			pEnd = strstr(buf,"type-b");
+
+			if (pEnd == NULL) {
+				ret = PLUG_TYPE_OTH;
+			}
+			else{
 				ret = PLUG_TYPE_B; 
+			}
+		}
 		else
 				ret = PLUG_TYPE_A;
 	}
@@ -151,8 +156,15 @@ static int get_cable_type(char * path)
 	
 	pEnd = strstr(buf,"passive");
  
- 	if (pEnd != NULL) 
-		ret = CABLE_TYPE_ACTIVE;
+ 	if (pEnd == NULL) 
+	{
+		pEnd = strstr(buf,"active");
+ 	
+	 	if (pEnd == NULL) 
+			ret = CABLE_TYPE_UNKNOWN;
+		else
+			ret = CABLE_TYPE_ACTIVE;
+	}
 
 	fclose(fp);
 
@@ -340,6 +352,33 @@ static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, stru
 							
 		}while(1);
 
+	} else if(recipient == AM_SOP_PR){
+
+ 		do {
+
+				sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/port%d-plug0/port%d-plug0.%d",conn_num,conn_num,conn_num,num_alt_mode);
+
+				if (lstat(path_str, &sb) == -1) 
+					break;
+
+				sprintf(port_content,"%s/%s",path_str ,"svid");
+
+				alt_mode_data[num_alt_mode].svid = get_svid_from_path(port_content);
+
+				memset(port_content,0,512);
+
+				sprintf(port_content,"%s/%s",path_str ,"vdo");
+
+				alt_mode_data[num_alt_mode].vdo = get_vdo_from_path(port_content);
+
+				memset(port_content,0,512);
+	
+				memset(path_str,0,512);
+
+				num_alt_mode++;
+							
+		}while(1);
+
 	} else {
 
 	}
@@ -361,18 +400,18 @@ static int libtypec_sysfs_get_cable_properties_ops (int conn_num,struct libtypec
 		return -1;
 
 	sprintf(port_content,"%s/%s",path_str ,"plug_type");
-
+   
 	cbl_prop_data->plug_end_type = get_cable_plug_type(port_content);
 
 	memset(port_content,0,512);
 
 	sprintf(port_content,"%s/%s",path_str ,"type");
-
+   
 	cbl_prop_data->cable_type = get_cable_type(port_content);
 
 	memset(port_content,0,512);
 
-	sprintf(port_content,SYSFS_TYPEC_PATH "port%d-plug%d/%s",conn_num,conn_num ,"number_of_alternate_modes");
+	sprintf(port_content,SYSFS_TYPEC_PATH "/port%d-plug0/%s",conn_num ,"number_of_alternate_modes");
 
 	cbl_prop_data->mode_support = get_cable_mode_support(port_content);
 
@@ -400,7 +439,6 @@ static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec
 	return 0;
 
 }
-
 
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
     .init = libtypec_sysfs_init,

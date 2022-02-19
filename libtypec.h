@@ -74,9 +74,9 @@ struct libtypec_cable_property {
 	unsigned short  speed_supported;
     unsigned char   current_capability;
     unsigned        vbus_support:1;
-    unsigned        cable_type:1;
+    unsigned char   cable_type;
     unsigned        directionality:1;
-    unsigned        plug_end_type:2;
+    unsigned char   plug_end_type;
     unsigned        mode_support:1;
     unsigned        reserved_1:2;
     unsigned        latency:4;
@@ -108,6 +108,7 @@ struct libtypec_cable_property {
 
 #define CABLE_TYPE_PASSIVE 0
 #define CABLE_TYPE_ACTIVE 1
+#define CABLE_TYPE_UNKNOWN 2
 
 int libtypec_init(char **session_info);
 int libtypec_exit(void);

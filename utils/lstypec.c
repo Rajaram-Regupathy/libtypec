@@ -71,8 +71,8 @@ void print_conn_capability(struct libtypec_connector_cap_data conn_data)
 
 void print_cable_prop(struct libtypec_cable_property cable_prop,int conn_num)
 {
-    char *cable_type[] = {"Passive","Active","Invalid"};
-    char *cable_plug_type[] = {"USB Type A","USB Type B","USB Type C", "Non-USB Type","Invalid"};
+    char *cable_type[] = {"Passive","Active","Unknown"};
+    char *cable_plug_type[] = {"USB Type A","USB Type B","USB Type C", "Non-USB Type","Unknown"};
 
     printf("\tCable Property in Port %d:\n",conn_num);
 
@@ -149,17 +149,20 @@ int main(void) {
         ret = libtypec_get_cable_properties(i,&cable_prop);
 
         if(ret>=0)
-            print_cable_prop(cable_prop,i);
+           print_cable_prop(cable_prop,i);
 
         printf("\tAlternate Modes Supported:\n");
 
         ret = libtypec_get_alternate_modes(AM_CONNECTOR,i,am_data);
    
-        print_alternate_mode_data(AM_CONNECTOR,ret,am_data);
+        if(ret > 0)
+            print_alternate_mode_data(AM_CONNECTOR,ret,am_data);
+        else
+            printf("\t\tNo Local Modes listed with typec class\n");
        
 	    ret =  libtypec_get_connector_status(i,&conn_sts);
 
-        if(conn_sts.connect_sts)
+        if((ret == 0) && conn_sts.connect_sts)
         {
             ret = libtypec_get_alternate_modes(AM_SOP,i,am_data);
 
@@ -167,4 +170,5 @@ int main(void) {
         }
     }
 
+    printf("\n");
 }
