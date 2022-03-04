@@ -40,37 +40,20 @@ SOFTWARE.
 #define MAX_PORT_STR 7 /* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
 
-static unsigned long get_svid_from_path(char * path)
+static unsigned long get_hex_dword_from_path(char * path)
 {
 	char buf[64];
-	unsigned short svid;
+	unsigned long dword;
 
 	FILE *fp = fopen(path,"r");
 
 	fgets(buf,64,fp);
 
-	svid = strtol(buf, NULL, 16);;
+	dword = strtol(buf, NULL, 16);
 
 	fclose(fp);
 
-	return svid;
-
-}
-
-static unsigned long get_vdo_from_path(char * path)
-{
-	char buf[64];
-	unsigned int vdo;
-
-	FILE *fp = fopen(path,"r");
-
-	fgets(buf,64,fp);
-
-	vdo = strtol(buf, NULL, 16);
-
-	fclose(fp);
-
-	return vdo;
+	return dword;
 
 }
 
@@ -319,13 +302,13 @@ static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, stru
 
 				sprintf(port_content,"%s/%s",path_str ,"svid");
 
-				alt_mode_data[num_alt_mode].svid = get_svid_from_path(port_content);
+				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 
 				sprintf(port_content,"%s/%s",path_str ,"vdo");
 
-				alt_mode_data[num_alt_mode].vdo = get_vdo_from_path(port_content);
+				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 	
@@ -347,13 +330,13 @@ static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, stru
 
 				sprintf(port_content,"%s/%s",path_str ,"svid");
 
-				alt_mode_data[num_alt_mode].svid = get_svid_from_path(port_content);
+				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 
 				sprintf(port_content,"%s/%s",path_str ,"vdo");
 
-				alt_mode_data[num_alt_mode].vdo = get_vdo_from_path(port_content);
+				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 	
@@ -374,13 +357,13 @@ static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, stru
 
 				sprintf(port_content,"%s/%s",path_str ,"svid");
 
-				alt_mode_data[num_alt_mode].svid = get_svid_from_path(port_content);
+				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 
 				sprintf(port_content,"%s/%s",path_str ,"vdo");
 
-				alt_mode_data[num_alt_mode].vdo = get_vdo_from_path(port_content);
+				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
 				memset(port_content,0,512);
 	
@@ -427,7 +410,6 @@ static int libtypec_sysfs_get_cable_properties_ops (int conn_num,struct libtypec
 	cbl_prop_data->mode_support = get_cable_mode_support(port_content);
 
 	return 0;
-
 }
 
 static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec_connector_status *conn_sts)
@@ -451,6 +433,113 @@ static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec
 
 }
 
+static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_num, char* pd_resp_data)
+{
+    struct stat sb;
+	char path_str[512], port_content[512];
+	union libtypec_discovered_identity *id = (void *)pd_resp_data;
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
+
+ 	if (lstat(path_str, &sb) == -1) {
+		printf("Incorrect connector number : failed to open, %s",path_str);
+		return -1;
+    }
+
+	if (recipient == AM_SOP){
+
+		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/identity",conn_num);
+
+		if (lstat(path_str, &sb) == -1) 
+			return -1;
+
+		sprintf(port_content,"%s/%s",path_str ,"cert_stat");
+
+		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
+
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"id_header");
+
+		id->disc_id.id_header = get_hex_dword_from_path(port_content);
+
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product");
+
+		id->disc_id.product = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo1");
+
+		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo2");
+
+		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo3");
+
+		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
+
+	} else if(recipient == AM_SOP_PR){
+
+		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/identity",conn_num);
+
+		if (lstat(path_str, &sb) == -1) 
+			return -1;
+
+		sprintf(port_content,"%s/%s",path_str ,"cert_stat");
+
+		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
+
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"id_header");
+
+		id->disc_id.id_header = get_hex_dword_from_path(port_content);
+
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product");
+
+		id->disc_id.product = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo1");
+
+		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo2");
+
+		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
+		
+		memset(port_content,0,512);
+
+		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo3");
+
+		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
+
+	} 
+}
+
+static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp)
+{
+	if(resp_type == DISCOVER_ID_REQ)
+	{
+		libtypec_sysfs_get_discovered_identity_ops(recipient,conn_num,pd_msg_resp);
+	}	
+
+}
+
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
     .init = libtypec_sysfs_init,
     .exit = libtypec_sysfs_exit,
@@ -462,4 +551,5 @@ const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
     .get_pdos_ops =  NULL,
     .get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
     .get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
+    .get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,
 };

@@ -65,6 +65,19 @@ struct altmode_data {
 	unsigned long vdo;
 };
 
+union libtypec_discovered_identity
+{
+    char buf_disc_id[24];
+    struct discovered_identity {
+        unsigned long cert_stat;
+        unsigned long id_header;
+        unsigned long product;
+        unsigned long product_type_vdo1;
+        unsigned long product_type_vdo2;
+        unsigned long product_type_vdo3;  
+    }disc_id; 
+};
+
 struct libtypec_connector_status {
 	unsigned    sts_change:16;
 	unsigned    pwr_op_mode:3;
@@ -120,6 +133,13 @@ struct libtypec_cable_property {
 #define CABLE_TYPE_ACTIVE 1
 #define CABLE_TYPE_UNKNOWN 2
 
+#define GET_SINK_CAP_EXTENDED 0
+#define GET_SOURCE_CAP_EXTENDED 1
+#define GET_BATTERY_CAP 2
+#define GET_BATTERY_STATUS 3
+#define DISCOVER_ID_REQ 4
+
+
 int libtypec_init(char **session_info);
 int libtypec_exit(void);
 
@@ -135,5 +155,6 @@ int libtypec_get_current_cam (char *cur_cam_data);
 int libtypec_get_pdos (int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, char *pdo_data);
 int libtypec_get_cable_properties (int conn_num, struct libtypec_cable_property *cbl_prop_data);
 int libtypec_get_connector_status (int conn_num, struct libtypec_connector_status *conn_sts);
+int libtypec_get_pd_message (int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
 
 #endif /*LIBTYPEC_H*/

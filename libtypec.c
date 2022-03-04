@@ -227,3 +227,24 @@ int libtypec_get_connector_status (int conn_num,struct libtypec_connector_status
     cur_libtypec_os_backend->get_connector_status_ops(conn_num,conn_sts);
     
 }
+
+/**
+ * This function shall be used to get the USB PD response messages from 
+ * 
+ * \param  recipient Represents PD response message to be retrieved from local
+ * or SOP or SOP' or SOP"
+ * 
+ * \param  conn_num Indicates which connector's PD message needs to be retrived
+ * 
+ * \param pd_msg_resp 
+ * \returns 0 on success
+ */
+
+int libtypec_get_pd_message (int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp)
+{
+    if(!cur_libtypec_os_backend)
+        return -EIO;
+
+    cur_libtypec_os_backend->get_pd_message_ops(recipient,conn_num,num_bytes,resp_type,pd_msg_resp);
+    
+}

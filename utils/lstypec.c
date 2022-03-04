@@ -30,6 +30,7 @@ struct libtypec_capabiliy_data  get_cap_data;
 struct libtypec_connector_cap_data conn_data;
 struct libtypec_connector_status conn_sts;
 struct libtypec_cable_property cable_prop;
+union libtypec_discovered_identity id;
 
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
@@ -109,6 +110,55 @@ void  print_alternate_mode_data(int recepient,int num_mode,struct altmode_data *
         }
     }
 
+    if(recepient == AM_SOP_PR) {
+
+        for(int i=0;i<num_mode;i++){
+            
+            printf("\tCable Plug Modes %d:\n",i);
+
+            printf("\t\tSVID\t:\t0x%04lx\n",am_data[i].svid);
+
+            printf("\t\tVDO\t:\t0x%04lx\n",am_data[i].vdo);
+        }
+    }
+
+}
+
+void  print_identity_data(int recepient,union libtypec_discovered_identity id)
+{
+   if(recepient == AM_SOP) {
+
+        printf("\tPartner Identity :\n");
+
+        printf("\t\tCertificate\t:\t0x%04lx\n",id.disc_id.cert_stat);
+
+        printf("\t\tID Header\t:\t0x%04lx\n",id.disc_id.id_header);
+
+        printf("\t\tProduct\t\t:\t0x%04lx\n",id.disc_id.product);
+
+        printf("\t\tProduct VDO 1\t:\t0x%04lx\n",id.disc_id.product_type_vdo1);
+
+        printf("\t\tProduct VDO 2\t:\t0x%04lx\n",id.disc_id.product_type_vdo2);
+
+        printf("\t\tProduct VDO 3\t:\t0x%04lx\n",id.disc_id.product_type_vdo3);
+    }
+
+    if(recepient == AM_SOP_PR) {
+
+        printf("\tCable Identity :\n");
+
+        printf("\t\tCertificate\t:\t0x%04lx\n",id.disc_id.cert_stat);
+
+        printf("\t\tID Header\t:\t0x%04lx\n",id.disc_id.id_header);
+
+        printf("\t\tProduct\t\t:\t0x%04lx\n",id.disc_id.product);
+
+        printf("\t\tProduct VDO 1\t:\t0x%04lx\n",id.disc_id.product_type_vdo1);
+
+        printf("\t\tProduct VDO 2\t:\t0x%04lx\n",id.disc_id.product_type_vdo2);
+
+        printf("\t\tProduct VDO 3\t:\t0x%04lx\n",id.disc_id.product_type_vdo3);
+   }
 }
 
 void lstypec_print(char* val, int type)
@@ -164,9 +214,24 @@ int main(void) {
 
         if((ret == 0) && conn_sts.connect_sts)
         {
+            ret = libtypec_get_alternate_modes(AM_SOP_PR,i,am_data);
+
+            print_alternate_mode_data(AM_SOP_PR,ret,am_data);
+
+            ret = libtypec_get_pd_message(AM_SOP_PR,i,24,DISCOVER_ID_REQ,id.buf_disc_id);
+            
+	    if(ret>=0)
+                print_identity_data(AM_SOP_PR,id);
+
             ret = libtypec_get_alternate_modes(AM_SOP,i,am_data);
 
             print_alternate_mode_data(AM_SOP,ret,am_data);
+
+            ret = libtypec_get_pd_message(AM_SOP,i,24,DISCOVER_ID_REQ,id.buf_disc_id);
+
+            if(ret>=0)
+                print_identity_data(AM_SOP,id);
+
         }
     }
 
