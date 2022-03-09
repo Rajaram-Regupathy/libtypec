@@ -142,7 +142,7 @@ int libtypec_exit(void)
 {
     /* clear session info */
 
-    cur_libtypec_os_backend->exit();
+    return cur_libtypec_os_backend->exit();
 }
 
 /**
@@ -157,7 +157,7 @@ int libtypec_get_capability (struct libtypec_capabiliy_data  *cap_data)
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-    cur_libtypec_os_backend->get_capability_ops(cap_data);
+    return cur_libtypec_os_backend->get_capability_ops(cap_data);
 }
 
 /**
@@ -174,7 +174,7 @@ int libtypec_get_conn_capability (int conn_num, struct libtypec_connector_cap_da
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-   cur_libtypec_os_backend->get_conn_capability_ops(conn_num,conn_cap_data);   
+   return cur_libtypec_os_backend->get_conn_capability_ops(conn_num,conn_cap_data);
 }
 
 /**
@@ -186,15 +186,14 @@ int libtypec_get_conn_capability (int conn_num, struct libtypec_connector_cap_da
  * 
  * \param  conn_num Indicates which connector's capability needs to be retrived
  * 
- * \returns 0 on success
+ * \returns number of alternate modes on success
  */
 int libtypec_get_alternate_modes (int recipient, int conn_num, struct altmode_data *alt_mode_data)
 {
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-    cur_libtypec_os_backend->get_alternate_modes(recipient,conn_num,alt_mode_data);
-    
+    return cur_libtypec_os_backend->get_alternate_modes(recipient,conn_num,alt_mode_data);
 }
 /**
  * This function shall be used to get the Cable Property of a connector 
@@ -208,8 +207,7 @@ int libtypec_get_cable_properties (int conn_num,struct libtypec_cable_property *
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-    cur_libtypec_os_backend->get_cable_properties_ops(conn_num,cbl_prop_data);
-    
+    return cur_libtypec_os_backend->get_cable_properties_ops(conn_num,cbl_prop_data);
 }
 
 /**
@@ -224,8 +222,7 @@ int libtypec_get_connector_status (int conn_num,struct libtypec_connector_status
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-    cur_libtypec_os_backend->get_connector_status_ops(conn_num,conn_sts);
-    
+    return cur_libtypec_os_backend->get_connector_status_ops(conn_num,conn_sts);
 }
 
 /**
@@ -245,6 +242,6 @@ int libtypec_get_pd_message (int recipient, int conn_num, int num_bytes, int res
     if(!cur_libtypec_os_backend)
         return -EIO;
 
-    cur_libtypec_os_backend->get_pd_message_ops(recipient,conn_num,num_bytes,resp_type,pd_msg_resp);
-    
+    return cur_libtypec_os_backend->get_pd_message_ops(recipient,conn_num,num_bytes,resp_type,pd_msg_resp);
+
 }

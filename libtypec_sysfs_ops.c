@@ -192,8 +192,7 @@ static int libtypec_sysfs_init (char **session_info)
 
 static int libtypec_sysfs_exit (void)
 {
-
-
+  return 0;
 }
 
 static int libtypec_sysfs_get_capability_ops (struct libtypec_capabiliy_data  *cap_data)
@@ -246,8 +245,8 @@ static int libtypec_sysfs_get_capability_ops (struct libtypec_capabiliy_data  *c
     cap_data->bNumConnectors = num_ports;
     cap_data->bNumAltModes = num_alt_mode;
 
-	closedir(typec_path);
-
+    closedir(typec_path);
+    return 0;
 }
 
 static int libtypec_sysfs_get_conn_capability_ops (int conn_num, struct libtypec_connector_cap_data *conn_cap_data)
@@ -275,7 +274,8 @@ static int libtypec_sysfs_get_conn_capability_ops (int conn_num, struct libtypec
 		conn_cap_data->consumer = 1;
 	else
 		conn_cap_data->provider = 1;
-	
+
+        return 0;
 }
 
 static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, struct altmode_data *alt_mode_data)
@@ -529,6 +529,7 @@ static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_nu
 		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
 
 	} 
+        return 0;
 }
 
 static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp)
@@ -538,6 +539,7 @@ static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int nu
 		libtypec_sysfs_get_discovered_identity_ops(recipient,conn_num,pd_msg_resp);
 	}	
 
+        return 0;
 }
 
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {

@@ -16,7 +16,7 @@
  * @file lstypec.c
  * @author Rajaram Regupathy <rajaram.regupathy@gmail.com>
  * @brief Implements listing of typec port and port partner details
- * 
+ *
  */
 
 #include <stdio.h>
@@ -88,8 +88,8 @@ void  print_alternate_mode_data(int recepient,int num_mode,struct altmode_data *
 
     if(recepient == AM_CONNECTOR) {
 
-        for(int i=0;i<num_mode;i++){
-            
+      for(int i=0;i<num_mode;i++){
+
             printf("\tLocal Modes %d:\n",i);
 
             printf("\t\tSVID\t:\t0x%04lx\n",am_data[i].svid);
@@ -101,7 +101,7 @@ void  print_alternate_mode_data(int recepient,int num_mode,struct altmode_data *
     if(recepient == AM_SOP) {
 
         for(int i=0;i<num_mode;i++){
-            
+
             printf("\tPartner Modes %d:\n",i);
 
             printf("\t\tSVID\t:\t0x%04lx\n",am_data[i].svid);
@@ -113,7 +113,7 @@ void  print_alternate_mode_data(int recepient,int num_mode,struct altmode_data *
     if(recepient == AM_SOP_PR) {
 
         for(int i=0;i<num_mode;i++){
-            
+
             printf("\tCable Plug Modes %d:\n",i);
 
             printf("\t\tSVID\t:\t0x%04lx\n",am_data[i].svid);
@@ -166,12 +166,12 @@ void lstypec_print(char* val, int type)
     if(type == LSTYPEC_ERROR ){
         printf("lstypec - ERROR - %s\n",val);
         exit(1);
-    } else 
+    } else
        printf("lstypec - INFO - %s\n",val);
 }
 
 int main(void) {
-    
+
     int ret;
 
     ret = libtypec_init(session_info);
@@ -179,7 +179,7 @@ int main(void) {
     if(ret <0)
         lstypec_print("Failed in Initializing libtypec", LSTYPEC_ERROR);
 
-    print_session_info(session_info);
+    print_session_info();
 
     ret = libtypec_get_capability (&get_cap_data);
 
@@ -189,6 +189,9 @@ int main(void) {
     print_ppm_capability(get_cap_data);
 
     for(int i=0;i<get_cap_data.bNumConnectors;i++){
+        /* Resetting port properties */
+        cable_prop.cable_type = CABLE_TYPE_UNKNOWN;
+        cable_prop.plug_end_type = PLUG_TYPE_OTH;
 
         printf("\nConnector %d Capablity/Status\n",i);
 
@@ -204,13 +207,13 @@ int main(void) {
         printf("\tAlternate Modes Supported:\n");
 
         ret = libtypec_get_alternate_modes(AM_CONNECTOR,i,am_data);
-   
+
         if(ret > 0)
             print_alternate_mode_data(AM_CONNECTOR,ret,am_data);
         else
             printf("\t\tNo Local Modes listed with typec class\n");
-       
-	    ret =  libtypec_get_connector_status(i,&conn_sts);
+
+            ret =  libtypec_get_connector_status(i,&conn_sts);
 
         if((ret == 0) && conn_sts.connect_sts)
         {
@@ -219,8 +222,8 @@ int main(void) {
             print_alternate_mode_data(AM_SOP_PR,ret,am_data);
 
             ret = libtypec_get_pd_message(AM_SOP_PR,i,24,DISCOVER_ID_REQ,id.buf_disc_id);
-            
-	    if(ret>=0)
+
+            if(ret>=0)
                 print_identity_data(AM_SOP_PR,id);
 
             ret = libtypec_get_alternate_modes(AM_SOP,i,am_data);
