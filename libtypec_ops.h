@@ -26,8 +26,8 @@ SOFTWARE.
 /**
  * @file libtypec_ops.h
  * @author Rajaram Regupathy <rajaram.regupathy@gmail.com>
- * @brief Interface "ops" for abstracting backend typec framework 
- *  
+ * @brief Interface "ops" for abstracting backend typec framework
+ *
  */
 
 #ifndef LIBTYPEC_OPS_H
@@ -38,35 +38,34 @@ SOFTWARE.
 #define SYSFS_TYPEC_PATH "/sys/class/typec"
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 extern const struct libtypec_os_backend libtypec_lnx_sysfs_backend;
 
-struct libtypec_os_backend {
+struct libtypec_os_backend
+{
+    int (*init)(char **);
 
-    int (*init) (char **);
+    int (*exit)(void);
 
-    int (*exit) (void);
+    int (*get_capability_ops)(struct libtypec_capabiliy_data *cap_data);
 
-    int (*get_capability_ops) (struct libtypec_capabiliy_data  *cap_data);
+    int (*get_conn_capability_ops)(int conn_num, struct libtypec_connector_cap_data *conn_cap_data);
 
-    int (*get_conn_capability_ops) (int conn_num, struct libtypec_connector_cap_data *conn_cap_data);
+    int (*get_alternate_modes)(int recipient, int conn_num, struct altmode_data *alt_mode_data);
 
-    int (*get_alternate_modes) (int recipient, int conn_num, struct altmode_data *alt_mode_data);
+    int (*get_cam_supported_ops)(int conn_num, char *cam_data);
 
-    int (*get_cam_supported_ops) (int conn_num, char *cam_data);
+    int (*get_current_cam_ops)(char *cur_cam_data);
 
-    int (*get_current_cam_ops) (char *cur_cam_data);
+    int (*get_pdos_ops)(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, char *pdo_data);
 
-    int (*get_pdos_ops) (int conn_num, int partner,int offset, int num_pdo,int src_snk,int type,char *pdo_data);
+    int (*get_cable_properties_ops)(int conn_num, struct libtypec_cable_property *cbl_prop_data);
 
-    int (*get_cable_properties_ops) (int conn_num,struct libtypec_cable_property *cbl_prop_data);
+    int (*get_connector_status_ops)(int conn_num, struct libtypec_connector_status *conn_sts);
 
-    int (*get_connector_status_ops) (int conn_num, struct libtypec_connector_status *conn_sts);
-
-    int (*get_pd_message_ops) (int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
-
+    int (*get_pd_message_ops)(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
 };
 
 #endif /*LIBTYPEC_OPS_H*/

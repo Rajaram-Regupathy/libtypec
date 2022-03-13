@@ -27,56 +27,56 @@ SOFTWARE.
  * @file libtypec_sysfs_ops.c
  * @author Rajaram Regupathy <rajaram.regupathy@gmail.com>
  * @brief Functions for libtypec sysfs based operations
-*/
+ */
 
 #include "libtypec_ops.h"
 #include <dirent.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <sys/stat.h>
 
-#define MAX_PORT_STR 7 /* port%d with 7 bit numPorts */
+#define MAX_PORT_STR 7		/* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
 
-static unsigned long get_hex_dword_from_path(char * path)
+static unsigned long get_hex_dword_from_path(char *path)
 {
 	char buf[64];
 	unsigned long dword;
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,64,fp);
+	fgets(buf, 64, fp);
 
 	dword = strtol(buf, NULL, 16);
 
 	fclose(fp);
 
 	return dword;
-
 }
 
-unsigned char get_opr_mode(char * path)
+unsigned char get_opr_mode(char *path)
 {
 	char buf[64];
-	char * pEnd;
+	char *pEnd;
 	short ret = OPR_MODE_RD_ONLY; /*Rd sink*/
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,64,fp);
-	
-	pEnd = strstr(buf,"source");
- 
- 	if (pEnd != NULL) {
+	fgets(buf, 64, fp);
 
-		pEnd = strstr(buf,"sink");
- 		
-		if (pEnd != NULL) 
-				ret = OPR_MODE_DRP_ONLY; /*DRP*/
+	pEnd = strstr(buf, "source");
+
+	if (pEnd != NULL)
+	{
+
+		pEnd = strstr(buf, "sink");
+
+		if (pEnd != NULL)
+			ret = OPR_MODE_DRP_ONLY; /*DRP*/
 		else
-				ret = OPR_MODE_RP_ONLY; /*Rp only*/
+			ret = OPR_MODE_RP_ONLY; /*Rp only*/
 	}
 
 	fclose(fp);
@@ -84,50 +84,53 @@ unsigned char get_opr_mode(char * path)
 	return ret;
 }
 
-static short get_bcd_from_rev_file(char * path)
+static short get_bcd_from_rev_file(char *path)
 {
 	char buf[10];
 	short bcd;
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,10,fp);
+	fgets(buf, 10, fp);
 
-	bcd = ((buf[0] -'0') <<8) | (buf[2]-'0');
+	bcd = ((buf[0] - '0') << 8) | (buf[2] - '0');
 
 	fclose(fp);
 
 	return bcd;
 }
-static int get_cable_plug_type(char * path)
+static int get_cable_plug_type(char *path)
 {
 	char buf[64];
-	char * pEnd;
+	char *pEnd;
 	short ret = PLUG_TYPE_OTH; /*not USB*/
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,64,fp);
-	
-	pEnd = strstr(buf,"type-c");
- 
- 	if (pEnd == NULL) {
+	fgets(buf, 64, fp);
 
-		pEnd = strstr(buf,"type-a");
- 		
-		if (pEnd == NULL) 
+	pEnd = strstr(buf, "type-c");
+
+	if (pEnd == NULL)
+	{
+
+		pEnd = strstr(buf, "type-a");
+
+		if (pEnd == NULL)
 		{
-			pEnd = strstr(buf,"type-b");
+			pEnd = strstr(buf, "type-b");
 
-			if (pEnd == NULL) {
+			if (pEnd == NULL)
+			{
 				ret = PLUG_TYPE_OTH;
 			}
-			else{
-				ret = PLUG_TYPE_B; 
+			else
+			{
+				ret = PLUG_TYPE_B;
 			}
 		}
 		else
-				ret = PLUG_TYPE_A;
+			ret = PLUG_TYPE_A;
 	}
 	else
 		ret = PLUG_TYPE_C;
@@ -135,26 +138,25 @@ static int get_cable_plug_type(char * path)
 	fclose(fp);
 
 	return ret;
-
 }
 
-static int get_cable_type(char * path)
+static int get_cable_type(char *path)
 {
 	char buf[64];
-	char * pEnd;
+	char *pEnd;
 	short ret = CABLE_TYPE_PASSIVE;
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,64,fp);
-	
-	pEnd = strstr(buf,"passive");
- 
- 	if (pEnd == NULL) 
+	fgets(buf, 64, fp);
+
+	pEnd = strstr(buf, "passive");
+
+	if (pEnd == NULL)
 	{
-		pEnd = strstr(buf,"active");
- 	
-	 	if (pEnd == NULL) 
+		pEnd = strstr(buf, "active");
+
+		if (pEnd == NULL)
 			ret = CABLE_TYPE_UNKNOWN;
 		else
 			ret = CABLE_TYPE_ACTIVE;
@@ -163,395 +165,402 @@ static int get_cable_type(char * path)
 	fclose(fp);
 
 	return ret;
-
 }
 
-static int get_cable_mode_support(char * path)
+static int get_cable_mode_support(char *path)
 {
 	char buf[64];
-	short ret ;
+	short ret;
 
-	FILE *fp = fopen(path,"r");
+	FILE *fp = fopen(path, "r");
 
-	fgets(buf,64,fp);
-	
-	ret = (buf[0] -'0')?1:0;
-	
+	fgets(buf, 64, fp);
+
+	ret = (buf[0] - '0') ? 1 : 0;
+
 	fclose(fp);
 
 	return ret;
-
 }
 
-static int libtypec_sysfs_init (char **session_info)
+static int libtypec_sysfs_init(char **session_info)
 {
 
 	return 0;
-
 }
 
-static int libtypec_sysfs_exit (void)
+static int libtypec_sysfs_exit(void)
 {
-  return 0;
+	return 0;
 }
 
-static int libtypec_sysfs_get_capability_ops (struct libtypec_capabiliy_data  *cap_data)
+static int libtypec_sysfs_get_capability_ops(struct libtypec_capabiliy_data *cap_data)
 {
-    DIR *typec_path = opendir(SYSFS_TYPEC_PATH), *port_path;
+	DIR *typec_path = opendir(SYSFS_TYPEC_PATH), *port_path;
 	struct dirent *typec_entry, *port_entry;
-	int num_ports = 0,num_alt_mode = 0;
+	int num_ports = 0, num_alt_mode = 0;
 	char path_str[512], port_content[512];
 
-	if (!typec_path) {
-		printf("opendir typec class failed, %s",SYSFS_TYPEC_PATH);
+	if (!typec_path)
+	{
+		printf("opendir typec class failed, %s", SYSFS_TYPEC_PATH);
 		return -1;
 	}
 
-	while ((typec_entry = readdir(typec_path))) {
+	while ((typec_entry = readdir(typec_path)))
+	{
 
-		if( !(strncmp(typec_entry->d_name, "port", 4)) && (strlen(typec_entry->d_name) <= MAX_PORT_STR))
+		if (!(strncmp(typec_entry->d_name, "port", 4)) && (strlen(typec_entry->d_name) <= MAX_PORT_STR))
 		{
 			num_ports++;
 
-			sprintf(path_str, SYSFS_TYPEC_PATH "/%s",typec_entry->d_name);
+			sprintf(path_str, SYSFS_TYPEC_PATH "/%s", typec_entry->d_name);
 
 			/*Scan the port capability*/
 			port_path = opendir(path_str);
 
-			while ((port_entry = readdir(port_path))) {
+			while ((port_entry = readdir(port_path)))
+			{
 
-				if( !(strncmp(port_entry->d_name, "port", 4)) && (strlen(port_entry->d_name) <= MAX_PORT_MODE_STR))
+				if (!(strncmp(port_entry->d_name, "port", 4)) && (strlen(port_entry->d_name) <= MAX_PORT_MODE_STR))
 				{
 					num_alt_mode++;
 				}
-				
 			}
 
-			sprintf(port_content,"%s/%s",path_str ,"usb_power_delivery_revision");
+			sprintf(port_content, "%s/%s", path_str, "usb_power_delivery_revision");
 
 			cap_data->bcdPDVersion = get_bcd_from_rev_file(port_content);
-			
-			memset(port_content,0,512);
 
-			sprintf(port_content,"%s/%s",path_str ,"usb_typec_revision");
+			memset(port_content, 0, 512);
+
+			sprintf(port_content, "%s/%s", path_str, "usb_typec_revision");
 
 			cap_data->bcdTypeCVersion = get_bcd_from_rev_file(port_content);
 
 			closedir(port_path);
-
 		}
 	}
 
-    cap_data->bNumConnectors = num_ports;
-    cap_data->bNumAltModes = num_alt_mode;
+	cap_data->bNumConnectors = num_ports;
+	cap_data->bNumAltModes = num_alt_mode;
 
-    closedir(typec_path);
-    return 0;
+	closedir(typec_path);
+	return 0;
 }
 
-static int libtypec_sysfs_get_conn_capability_ops (int conn_num, struct libtypec_connector_cap_data *conn_cap_data)
-{
-    struct stat sb;
-	struct dirent *port_entry;
-	char path_str[512], port_content[512];
-
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
-
- 	if (lstat(path_str, &sb) == -1) {
-		printf("Incorrect connector number : failed to open, %s",path_str);
-		return -1;
-    }
-
-	sprintf(port_content,"%s/%s",path_str ,"power_role");
-
-	conn_cap_data->opr_mode = get_opr_mode(port_content);
-
-	if(conn_cap_data->opr_mode == OPR_MODE_DRP_ONLY) {
-		conn_cap_data->provider = 1;
-		conn_cap_data->consumer = 1;
-	} 
-	else if (conn_cap_data->opr_mode == OPR_MODE_RD_ONLY)
-		conn_cap_data->consumer = 1;
-	else
-		conn_cap_data->provider = 1;
-
-        return 0;
-}
-
-static int libtypec_sysfs_get_alternate_modes (int recipient, int conn_num, struct altmode_data *alt_mode_data)
-{
-    struct stat sb;
-	int num_alt_mode = 0;
-	char path_str[512], port_content[512];
-
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
-
- 	if (lstat(path_str, &sb) == -1) {
-		printf("Incorrect connector number : failed to open, %s",path_str);
-		return -1;
-    }
-
-	if (recipient == AM_CONNECTOR){
-
-		do {
-
-				sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d.%d",conn_num,conn_num,num_alt_mode);
-
-				if (lstat(path_str, &sb) == -1) 
-					break;
-
-				sprintf(port_content,"%s/%s",path_str ,"svid");
-
-				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-
-				sprintf(port_content,"%s/%s",path_str ,"vdo");
-
-				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-	
-				memset(path_str,0,512);
-
-				num_alt_mode++;
-
-							
-		}while(1);
-
-	} else if (recipient == AM_SOP){
-
- 		do {
-
-				sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner/port%d-partner.%d",conn_num,conn_num,conn_num,num_alt_mode);
-
-				if (lstat(path_str, &sb) == -1) 
-					break;
-
-				sprintf(port_content,"%s/%s",path_str ,"svid");
-
-				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-
-				sprintf(port_content,"%s/%s",path_str ,"vdo");
-
-				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-	
-				memset(path_str,0,512);
-
-				num_alt_mode++;
-							
-		}while(1);
-
-	} else if(recipient == AM_SOP_PR){
-
- 		do {
-
-				sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/port%d-plug0/port%d-plug0.%d",conn_num,conn_num,conn_num,num_alt_mode);
-
-				if (lstat(path_str, &sb) == -1) 
-					break;
-
-				sprintf(port_content,"%s/%s",path_str ,"svid");
-
-				alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-
-				sprintf(port_content,"%s/%s",path_str ,"vdo");
-
-				alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
-
-				memset(port_content,0,512);
-	
-				memset(path_str,0,512);
-
-				num_alt_mode++;
-							
-		}while(1);
-
-	} else {
-
-	}
-
-	return num_alt_mode;
-
-}
-
-static int libtypec_sysfs_get_cable_properties_ops (int conn_num,struct libtypec_cable_property *cbl_prop_data)
+static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_connector_cap_data *conn_cap_data)
 {
 	struct stat sb;
 	struct dirent *port_entry;
 	char path_str[512], port_content[512];
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable",conn_num);
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Incorrect connector number : failed to open, %s", path_str);
+		return -1;
+	}
+
+	sprintf(port_content, "%s/%s", path_str, "power_role");
+
+	conn_cap_data->opr_mode = get_opr_mode(port_content);
+
+	if (conn_cap_data->opr_mode == OPR_MODE_DRP_ONLY)
+	{
+		conn_cap_data->provider = 1;
+		conn_cap_data->consumer = 1;
+	}
+	else if (conn_cap_data->opr_mode == OPR_MODE_RD_ONLY)
+		conn_cap_data->consumer = 1;
+	else
+		conn_cap_data->provider = 1;
+
+	return 0;
+}
+
+static int libtypec_sysfs_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data)
+{
+	struct stat sb;
+	int num_alt_mode = 0;
+	char path_str[512], port_content[512];
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Incorrect connector number : failed to open, %s", path_str);
+		return -1;
+	}
+
+	if (recipient == AM_CONNECTOR)
+	{
+
+		do
+		{
+
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d.%d", conn_num, conn_num, num_alt_mode);
+
+			if (lstat(path_str, &sb) == -1)
+				break;
+
+			sprintf(port_content, "%s/%s", path_str, "svid");
+
+			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			sprintf(port_content, "%s/%s", path_str, "vdo");
+
+			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			memset(path_str, 0, 512);
+
+			num_alt_mode++;
+
+		} while (1);
+	}
+	else if (recipient == AM_SOP)
+	{
+
+		do
+		{
+
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner/port%d-partner.%d", conn_num, conn_num, conn_num, num_alt_mode);
+
+			if (lstat(path_str, &sb) == -1)
+				break;
+
+			sprintf(port_content, "%s/%s", path_str, "svid");
+
+			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			sprintf(port_content, "%s/%s", path_str, "vdo");
+
+			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			memset(path_str, 0, 512);
+
+			num_alt_mode++;
+
+		} while (1);
+	}
+	else if (recipient == AM_SOP_PR)
+	{
+
+		do
+		{
+
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/port%d-plug0/port%d-plug0.%d", conn_num, conn_num, conn_num, num_alt_mode);
+
+			if (lstat(path_str, &sb) == -1)
+				break;
+
+			sprintf(port_content, "%s/%s", path_str, "svid");
+
+			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			sprintf(port_content, "%s/%s", path_str, "vdo");
+
+			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
+
+			memset(port_content, 0, 512);
+
+			memset(path_str, 0, 512);
+
+			num_alt_mode++;
+
+		} while (1);
+	}
+	else
+	{
+	}
+
+	return num_alt_mode;
+}
+
+static int libtypec_sysfs_get_cable_properties_ops(int conn_num, struct libtypec_cable_property *cbl_prop_data)
+{
+	struct stat sb;
+	struct dirent *port_entry;
+	char path_str[512], port_content[512];
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable", conn_num);
 
 	/* No cable indentified or connector number is incorrect */
- 	if (lstat(path_str, &sb) == -1) 
+	if (lstat(path_str, &sb) == -1)
 		return -1;
 
-	sprintf(port_content,"%s/%s",path_str ,"plug_type");
-   
+	sprintf(port_content, "%s/%s", path_str, "plug_type");
+
 	cbl_prop_data->plug_end_type = get_cable_plug_type(port_content);
 
-	memset(port_content,0,512);
+	memset(port_content, 0, 512);
 
-	sprintf(port_content,"%s/%s",path_str ,"type");
-   
+	sprintf(port_content, "%s/%s", path_str, "type");
+
 	cbl_prop_data->cable_type = get_cable_type(port_content);
 
-	memset(port_content,0,512);
+	memset(port_content, 0, 512);
 
-	sprintf(port_content,SYSFS_TYPEC_PATH "/port%d-plug0/%s",conn_num ,"number_of_alternate_modes");
+	sprintf(port_content, SYSFS_TYPEC_PATH "/port%d-plug0/%s", conn_num, "number_of_alternate_modes");
 
 	cbl_prop_data->mode_support = get_cable_mode_support(port_content);
 
 	return 0;
 }
 
-static int libtypec_sysfs_get_connector_status_ops (int conn_num,struct libtypec_connector_status *conn_sts)
+static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec_connector_status *conn_sts)
 {
 	struct stat sb;
 	struct dirent *port_entry;
 	char path_str[512], port_content[512];
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
 
- 	if (lstat(path_str, &sb) == -1) {
-		printf("Incorrect connector number : failed to open, %s",path_str);
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Incorrect connector number : failed to open, %s", path_str);
 		return -1;
-    }
+	}
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner",conn_num,conn_num);
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner", conn_num, conn_num);
 
-	conn_sts->connect_sts = (lstat(path_str, &sb) == -1) ? 0:1;
+	conn_sts->connect_sts = (lstat(path_str, &sb) == -1) ? 0 : 1;
 
 	return 0;
-
 }
 
-static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_num, char* pd_resp_data)
+static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_num, char *pd_resp_data)
 {
-    struct stat sb;
+	struct stat sb;
 	char path_str[512], port_content[512];
 	union libtypec_discovered_identity *id = (void *)pd_resp_data;
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d",conn_num);
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
 
- 	if (lstat(path_str, &sb) == -1) {
-		printf("Incorrect connector number : failed to open, %s",path_str);
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Incorrect connector number : failed to open, %s", path_str);
 		return -1;
-    }
+	}
 
-	if (recipient == AM_SOP){
+	if (recipient == AM_SOP)
+	{
 
-		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/identity",conn_num);
+		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/identity", conn_num);
 
-		if (lstat(path_str, &sb) == -1) 
+		if (lstat(path_str, &sb) == -1)
 			return -1;
 
-		sprintf(port_content,"%s/%s",path_str ,"cert_stat");
+		sprintf(port_content, "%s/%s", path_str, "cert_stat");
 
 		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
 
-		memset(port_content,0,512);
+		memset(port_content, 0, 512);
 
-		sprintf(port_content,"%s/%s",path_str ,"id_header");
+		sprintf(port_content, "%s/%s", path_str, "id_header");
 
 		id->disc_id.id_header = get_hex_dword_from_path(port_content);
 
-		memset(port_content,0,512);
+		memset(port_content, 0, 512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product");
+		sprintf(port_content, "%s/%s", path_str, "product");
 
 		id->disc_id.product = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo1");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo1");
 
 		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo2");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo2");
 
 		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo3");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo3");
 
 		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
+	}
+	else if (recipient == AM_SOP_PR)
+	{
 
-	} else if(recipient == AM_SOP_PR){
+		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/identity", conn_num);
 
-		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/identity",conn_num);
-
-		if (lstat(path_str, &sb) == -1) 
+		if (lstat(path_str, &sb) == -1)
 			return -1;
 
-		sprintf(port_content,"%s/%s",path_str ,"cert_stat");
+		sprintf(port_content, "%s/%s", path_str, "cert_stat");
 
 		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
 
-		memset(port_content,0,512);
+		memset(port_content, 0, 512);
 
-		sprintf(port_content,"%s/%s",path_str ,"id_header");
+		sprintf(port_content, "%s/%s", path_str, "id_header");
 
 		id->disc_id.id_header = get_hex_dword_from_path(port_content);
 
-		memset(port_content,0,512);
+		memset(port_content, 0, 512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product");
+		sprintf(port_content, "%s/%s", path_str, "product");
 
 		id->disc_id.product = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo1");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo1");
 
 		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo2");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo2");
 
 		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
-		
-		memset(port_content,0,512);
 
-		sprintf(port_content,"%s/%s",path_str ,"product_type_vdo3");
+		memset(port_content, 0, 512);
+
+		sprintf(port_content, "%s/%s", path_str, "product_type_vdo3");
 
 		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
-
-	} 
-        return 0;
+	}
+	return 0;
 }
 
 static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp)
 {
-	if(resp_type == DISCOVER_ID_REQ)
+	if (resp_type == DISCOVER_ID_REQ)
 	{
-		libtypec_sysfs_get_discovered_identity_ops(recipient,conn_num,pd_msg_resp);
-	}	
+		return libtypec_sysfs_get_discovered_identity_ops(recipient, conn_num, pd_msg_resp);
+	}
 
-        return 0;
+	return 0;
 }
 
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
-    .init = libtypec_sysfs_init,
-    .exit = libtypec_sysfs_exit,
-    .get_capability_ops = libtypec_sysfs_get_capability_ops,
-    .get_conn_capability_ops = libtypec_sysfs_get_conn_capability_ops,
-    .get_alternate_modes = libtypec_sysfs_get_alternate_modes,
-    .get_cam_supported_ops = NULL,
-    .get_current_cam_ops = NULL,
-    .get_pdos_ops =  NULL,
-    .get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
-    .get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
-    .get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,
+	.init = libtypec_sysfs_init,
+	.exit = libtypec_sysfs_exit,
+	.get_capability_ops = libtypec_sysfs_get_capability_ops,
+	.get_conn_capability_ops = libtypec_sysfs_get_conn_capability_ops,
+	.get_alternate_modes = libtypec_sysfs_get_alternate_modes,
+	.get_cam_supported_ops = NULL,
+	.get_current_cam_ops = NULL,
+	.get_pdos_ops = NULL,
+	.get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
+	.get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
+	.get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,
 };
