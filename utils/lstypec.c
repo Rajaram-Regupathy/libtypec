@@ -39,13 +39,80 @@ char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
 #define LSTYPEC_ERROR 1
 #define LSTYPEC_INFO 2
 
+int verbose = 1;
+
+union id_header
+{
+    unsigned long id_hdr;
+    struct
+    {
+        unsigned usb_vendor_id : 16;
+        unsigned reserved : 5;
+        unsigned connector_type : 2;
+        unsigned prd_type_dfp : 3;
+        unsigned modal_operation : 1;
+        unsigned product_type : 3;
+        unsigned usb_capable_device : 1;
+        unsigned usb_capable_host : 1;
+    } id_hdr_pd3_1_v1_3;
+
+    struct
+    {
+        unsigned usb_vendor_id : 16;
+        unsigned reserved : 10;
+        unsigned modal_operation : 1;
+        unsigned product_type : 3;
+        unsigned usb_capable_device : 1;
+        unsigned usb_capable_host : 1;
+    } id_hdr_pd2_v1_3;
+};
+
+union passive_vdo_1
+{
+
+    unsigned long psv_vdo_1;
+
+    struct
+    {
+        unsigned usb_signalling : 3;
+        unsigned reserved3 : 2;
+        unsigned vbus_current_cap : 2;
+        unsigned reserved7 : 2;
+        unsigned vbus_max_volt : 2;
+        unsigned termination_type : 2;
+        unsigned latency : 4;
+        unsigned epr_mode : 1;
+        unsigned plug_type : 2;
+        unsigned reserved20 : 1;
+        unsigned vdo_version : 3;
+        unsigned fw_ver : 4;
+        unsigned hw_ver : 4;
+    } psv_vdo1_pd3_1_v1_3;
+
+    struct
+    {
+        unsigned usb_signalling : 3;
+        unsigned reserved3 : 1;
+        unsigned vbus_thru_cbl : 1;
+        unsigned vbus_handling : 2;
+        unsigned dir_support : 4;
+        unsigned termination_type : 2;
+        unsigned latency : 4;
+        unsigned reserved17 : 1;
+        unsigned plug_type : 2;
+        unsigned reserved20 : 4;
+        unsigned fw_ver : 4;
+        unsigned hw_ver : 4;
+    } psv_vdo1_pd2_v1_3;
+};
+
 void print_session_info()
 {
     printf("lstypec %d.%d Session Info\n", LSTYPEC_MAJOR_VERSION, LSTYPEC_MINOR_VERSION);
 
     printf("\tUsing %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
 
-    printf("\tOn Kernel %s\n", session_info[LIBTYPEC_KERNEL_INDEX]);
+    printf("\t%s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
 }
 
 void print_ppm_capability(struct libtypec_capabiliy_data ppm_data)
@@ -128,16 +195,56 @@ void print_alternate_mode_data(int recepient, int num_mode, struct altmode_data 
 
 void print_identity_data(int recepient, union libtypec_discovered_identity id)
 {
+    char *conn_type[] = {"Legacy systems", "Undefined", "USB Type-C Receptacle", "USB Type-C Plug"};
+    char *dfp_type[] = {"Not a DFP/Legacy Device", "PDUSB Hub", "PDUSB Host", "Power Brick", "Alternate Mode Adaptor", "Reserved"};
+    char *ufp_type[] = {"Not a UFP", "PDUSB Hub", "PDUSB Peripheral", "PSD", "Reserved", "Alternate Mode Adapter", "VConn Powered Device", "Reserved"};
+    char *cbl_type[] = { "Not a Cable Plug/VPD", "Reserved", "Reserved", "Passive Cable","Active Cable","Reserved"};
+    char *latency[] = { "<10ns (~1m)","10ns to 20ns (~2m)","20ns to 30ns (~3m)",
+                        "30ns to 40ns (~4m)", "40ns to 50ns (~5m)","50ns to 60ns (~6m)",
+                        "60ns to 70ns (~7m)","> 70ns (>~7m)", "Reserved"};
+    char *vbus_max_volt[] = {"20V","Deprecated","Deprecated","50V"};
+    char *vbus_cur_handling[] = {"Reserved","3A","5A","Reserved"};
+    char *usb_speed_v3 [] = {"USB 2.0", "USB 3.2 Gen1","USB 3.2/USB4 Gen 2","USB4 Gen3"};
+    char *usb_speed_v2 [] = {"USB 2.0", "USB 3.1 Gen1","USB 3.1 Gen1 Gen 2","Reserved"};
+    char *plug_type_v2 [] = {"USB Type-A","USB Type-B","USB Type-C","Captive"};
+
     if (recepient == AM_SOP)
     {
-
         printf("\tPartner Identity :\n");
 
         printf("\t\tCertificate\t:\t0x%04lx\n", id.disc_id.cert_stat);
 
         printf("\t\tID Header\t:\t0x%04lx\n", id.disc_id.id_header);
 
+        if (verbose)
+        {
+            union id_header id_hdr_val;
+            id_hdr_val.id_hdr = id.disc_id.id_header;
+
+            printf("\t\t\tVendor ID\t\t:\t0x%04x\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+
+            printf("\t\t\tConnector Type\t\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.connector_type, conn_type[id_hdr_val.id_hdr_pd3_1_v1_3.connector_type]);
+
+            printf("\t\t\tDFP Product Type\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.prd_type_dfp, dfp_type[id_hdr_val.id_hdr_pd3_1_v1_3.prd_type_dfp]);
+
+            printf("\t\t\tModal Operation\t\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.modal_operation ? "Yes" : "No");
+
+            printf("\t\t\tUFP Product Type\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.product_type, ufp_type[id_hdr_val.id_hdr_pd3_1_v1_3.product_type]);
+
+            printf("\t\t\tUSB Device Capability\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_capable_device ? "Yes" : "No");
+
+            printf("\t\t\tUSB Host Capability\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_capable_host ? "Yes" : "No");
+        }
+
         printf("\t\tProduct\t\t:\t0x%04lx\n", id.disc_id.product);
+
+        if (verbose)
+        {
+
+            printf("\t\t\tUSB Product ID\t\t:\t0x%04lx\n", (id.disc_id.product >> 16) & 0xffff);
+
+            printf("\t\t\tbcdDevice\t\t:\t0x%04lx\n", id.disc_id.product & 0xFFFF);
+        }
 
         printf("\t\tProduct VDO 1\t:\t0x%04lx\n", id.disc_id.product_type_vdo1);
 
@@ -155,9 +262,88 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
 
         printf("\t\tID Header\t:\t0x%04lx\n", id.disc_id.id_header);
 
+        if (verbose)
+        {
+            union id_header id_hdr_val;
+
+            id_hdr_val.id_hdr = id.disc_id.id_header;
+
+            printf("\t\t\tVendor ID\t\t:\t0x%04x\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+
+            printf("\t\t\tConnector Type\t\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.connector_type, conn_type[id_hdr_val.id_hdr_pd3_1_v1_3.connector_type]);
+
+            printf("\t\t\tDFP Product Type\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.prd_type_dfp, dfp_type[id_hdr_val.id_hdr_pd3_1_v1_3.prd_type_dfp]);
+
+            printf("\t\t\tModal Operation\t\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.modal_operation ? "Yes" : "No");
+
+            printf("\t\t\tUFP Product Type\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.product_type, cbl_type[id_hdr_val.id_hdr_pd3_1_v1_3.product_type]);
+
+            printf("\t\t\tUSB Device Capability\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_capable_device ? "Yes" : "No");
+
+            printf("\t\t\tUSB Host Capability\t:\t%s\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_capable_host ? "Yes" : "No");
+        }
+
         printf("\t\tProduct\t\t:\t0x%04lx\n", id.disc_id.product);
 
+        if (verbose)
+        {
+
+            printf("\t\t\tUSB Product ID\t\t:\t0x%04lx\n", (id.disc_id.product >> 16) & 0xffff);
+
+            printf("\t\t\tbcdDevice\t\t:\t0x%04lx\n", id.disc_id.product & 0xFFFF);
+        }
+
         printf("\t\tProduct VDO 1\t:\t0x%04lx\n", id.disc_id.product_type_vdo1);
+
+        if (verbose)
+        {
+            union passive_vdo_1 psv_vdo1;
+
+            psv_vdo1.psv_vdo_1 = id.disc_id.product_type_vdo1;
+
+            if (conn_data.plug_rev == 2)
+            {
+                printf("\t\t\tHW Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.hw_ver);
+
+                printf("\t\t\tFW Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.fw_ver);
+
+                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.plug_type,plug_type_v2[psv_vdo1.psv_vdo1_pd2_v1_3.plug_type]);
+
+                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.latency,latency[psv_vdo1.psv_vdo1_pd2_v1_3.latency]);
+
+                printf("\t\t\tCable Termination\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.termination_type);
+
+                printf("\t\t\tDirection Support\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.dir_support);
+
+                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling,vbus_cur_handling[psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling]);
+
+                printf("\t\t\tVBus Through Cable\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.vbus_thru_cbl);
+
+                printf("\t\t\tUSB Signalling Support\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling,usb_speed_v2[psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling]);
+            }
+            else
+            {
+                printf("\t\t\tHW Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.hw_ver);
+
+                printf("\t\t\tFW Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.fw_ver);
+
+                printf("\t\t\tVDO Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vdo_version);
+
+                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type,psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type==2?"USB Type C":"Captive");
+
+                printf("\t\t\tEPR Mode\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.epr_mode);
+
+                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.latency,latency[psv_vdo1.psv_vdo1_pd3_1_v1_3.latency]);
+
+                printf("\t\t\tCable Termination\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type, psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type?"VCONN not required":"VCONN required");
+
+                printf("\t\t\tVBus Voltage Max\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt,vbus_max_volt[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt]);
+
+                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap,vbus_cur_handling[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap]);
+
+                printf("\t\t\tUSB Highest Speed\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling,usb_speed_v3[psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling]);
+            }
+        }
 
         printf("\t\tProduct VDO 2\t:\t0x%04lx\n", id.disc_id.product_type_vdo2);
 

@@ -56,7 +56,10 @@ struct libtypec_connector_cap_data
     unsigned swap2ufp : 1;
     unsigned swap2src : 1;
     unsigned swap2snk : 1;
-    unsigned reserved : 1;
+    unsigned reserved : 2;
+    unsigned reservedmsb : 12;
+    unsigned port_rev : 2;
+    unsigned plug_rev : 2;
 };
 
 struct altmode_data
@@ -114,7 +117,7 @@ struct libtypec_cable_property
 
 #define LIBTYPEC_VERSION_INDEX 0
 #define LIBTYPEC_KERNEL_INDEX 1
-#define LIBTYPEC_CLASS_INDEX 2
+#define LIBTYPEC_OS_INDEX 2
 #define LIBTYPEC_INTF_INDEX 3
 #define LIBTYPEC_SESSION_MAX_INDEX 4
 

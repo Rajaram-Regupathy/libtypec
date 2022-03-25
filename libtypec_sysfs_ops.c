@@ -39,7 +39,27 @@ SOFTWARE.
 
 #define MAX_PORT_STR 7		/* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
+#define OS_TYPE_CHROME 1
 
+static int get_os_type(void)
+{
+	FILE *fp = fopen("/etc/os-release", "r");
+	char buf[128], *p = NULL;
+	if (fp)
+	{
+		while (fgets(buf, 128, fp))
+		{
+			p = strstr(buf, "chrome");
+
+			if (p)
+			{
+				return OS_TYPE_CHROME;
+			}
+		}
+	}
+
+	return 0;
+}
 static unsigned long get_hex_dword_from_path(char *path)
 {
 	char buf[64];
@@ -87,16 +107,18 @@ unsigned char get_opr_mode(char *path)
 static short get_bcd_from_rev_file(char *path)
 {
 	char buf[10];
-	short bcd;
+	short bcd = 0;
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 10, fp);
+	if (fp)
+	{
+		fgets(buf, 10, fp);
 
-	bcd = ((buf[0] - '0') << 8) | (buf[2] - '0');
+		bcd = ((buf[0] - '0') << 8) | (buf[2] - '0');
 
-	fclose(fp);
-
+		fclose(fp);
+	}
 	return bcd;
 }
 static int get_cable_plug_type(char *path)
@@ -277,6 +299,16 @@ static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_
 	else
 		conn_cap_data->provider = 1;
 
+	if (get_os_type() == OS_TYPE_CHROME)
+	{
+		sprintf(port_content, "%s/port%d-partner/%s", path_str, conn_num, "usb_power_delivery_revision");
+
+		conn_cap_data->port_rev = (get_bcd_from_rev_file(port_content) >> 8) & 0xFF;
+
+		sprintf(port_content, "%s/port%d-cable/%s", path_str, conn_num, "usb_power_delivery_revision");
+
+		conn_cap_data->plug_rev = (get_bcd_from_rev_file(port_content) >> 8) & 0xFF;
+	}
 	return 0;
 }
 

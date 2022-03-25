@@ -94,7 +94,27 @@ char *get_kernel_verion(void)
     else
         return ker_uname.release;
 }
+char *get_os_name(void)
+{
+    FILE *fp = fopen("/etc/os-release", "r");
+    char buf[128], *p = NULL;
+    if (fp)
+    {
+        while (fgets(buf, 128, fp))
+        {
+            p = strstr(buf, "ID=");
 
+            if (p)
+            {
+                p = strchr(buf, '=') + 1;
+                p[strlen(p) - 1] = '\0';
+                break;
+            }
+        }
+    }
+
+    return p;
+}
 /**
  * This function initializes libtypec and must be called before
  * calling any other libtypec function.
@@ -115,6 +135,7 @@ int libtypec_init(char **session_info)
 
     session_info[LIBTYPEC_VERSION_INDEX] = ver_buf;
     session_info[LIBTYPEC_KERNEL_INDEX] = get_kernel_verion();
+    session_info[LIBTYPEC_OS_INDEX] = get_os_name();
 
     ret = statfs(SYSFS_TYPEC_PATH, &sb);
 
