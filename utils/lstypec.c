@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include "../libtypec.h"
+#include "names.h"
 #include <stdlib.h>
 
 #define LSTYPEC_MAJOR_VERSION 0
@@ -198,15 +199,16 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
     char *conn_type[] = {"Legacy systems", "Undefined", "USB Type-C Receptacle", "USB Type-C Plug"};
     char *dfp_type[] = {"Not a DFP/Legacy Device", "PDUSB Hub", "PDUSB Host", "Power Brick", "Alternate Mode Adaptor", "Reserved"};
     char *ufp_type[] = {"Not a UFP", "PDUSB Hub", "PDUSB Peripheral", "PSD", "Reserved", "Alternate Mode Adapter", "VConn Powered Device", "Reserved"};
-    char *cbl_type[] = { "Not a Cable Plug/VPD", "Reserved", "Reserved", "Passive Cable","Active Cable","Reserved"};
-    char *latency[] = { "<10ns (~1m)","10ns to 20ns (~2m)","20ns to 30ns (~3m)",
-                        "30ns to 40ns (~4m)", "40ns to 50ns (~5m)","50ns to 60ns (~6m)",
-                        "60ns to 70ns (~7m)","> 70ns (>~7m)", "Reserved"};
-    char *vbus_max_volt[] = {"20V","Deprecated","Deprecated","50V"};
-    char *vbus_cur_handling[] = {"Reserved","3A","5A","Reserved"};
-    char *usb_speed_v3 [] = {"USB 2.0", "USB 3.2 Gen1","USB 3.2/USB4 Gen 2","USB4 Gen3"};
-    char *usb_speed_v2 [] = {"USB 2.0", "USB 3.1 Gen1","USB 3.1 Gen1 Gen 2","Reserved"};
-    char *plug_type_v2 [] = {"USB Type-A","USB Type-B","USB Type-C","Captive"};
+    char *cbl_type[] = {"Not a Cable Plug/VPD", "Reserved", "Reserved", "Passive Cable", "Active Cable", "Reserved"};
+    char *latency[] = {"<10ns (~1m)", "10ns to 20ns (~2m)", "20ns to 30ns (~3m)",
+                       "30ns to 40ns (~4m)", "40ns to 50ns (~5m)", "50ns to 60ns (~6m)",
+                       "60ns to 70ns (~7m)", "> 70ns (>~7m)", "Reserved"};
+    char *vbus_max_volt[] = {"20V", "Deprecated", "Deprecated", "50V"};
+    char *vbus_cur_handling[] = {"Reserved", "3A", "5A", "Reserved"};
+    char *usb_speed_v3[] = {"USB 2.0", "USB 3.2 Gen1", "USB 3.2/USB4 Gen 2", "USB4 Gen3"};
+    char *usb_speed_v2[] = {"USB 2.0", "USB 3.1 Gen1", "USB 3.1 Gen1 Gen 2", "Reserved"};
+    char *plug_type_v2[] = {"USB Type-A", "USB Type-B", "USB Type-C", "Captive"};
+    char vendor_id[128];
 
     if (recepient == AM_SOP)
     {
@@ -221,7 +223,9 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
             union id_header id_hdr_val;
             id_hdr_val.id_hdr = id.disc_id.id_header;
 
-            printf("\t\t\tVendor ID\t\t:\t0x%04x\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+            get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+
+            printf("\t\t\tVendor ID\t\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id, vendor_id);
 
             printf("\t\t\tConnector Type\t\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.connector_type, conn_type[id_hdr_val.id_hdr_pd3_1_v1_3.connector_type]);
 
@@ -268,7 +272,9 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
 
             id_hdr_val.id_hdr = id.disc_id.id_header;
 
-            printf("\t\t\tVendor ID\t\t:\t0x%04x\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+            get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id);
+
+            printf("\t\t\tVendor ID\t\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.usb_vendor_id, vendor_id);
 
             printf("\t\t\tConnector Type\t\t:\t%d(%s)\n", id_hdr_val.id_hdr_pd3_1_v1_3.connector_type, conn_type[id_hdr_val.id_hdr_pd3_1_v1_3.connector_type]);
 
@@ -307,19 +313,19 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
 
                 printf("\t\t\tFW Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.fw_ver);
 
-                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.plug_type,plug_type_v2[psv_vdo1.psv_vdo1_pd2_v1_3.plug_type]);
+                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.plug_type, plug_type_v2[psv_vdo1.psv_vdo1_pd2_v1_3.plug_type]);
 
-                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.latency,latency[psv_vdo1.psv_vdo1_pd2_v1_3.latency]);
+                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.latency, latency[psv_vdo1.psv_vdo1_pd2_v1_3.latency]);
 
                 printf("\t\t\tCable Termination\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.termination_type);
 
                 printf("\t\t\tDirection Support\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.dir_support);
 
-                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling,vbus_cur_handling[psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling]);
+                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling, vbus_cur_handling[psv_vdo1.psv_vdo1_pd2_v1_3.vbus_handling]);
 
                 printf("\t\t\tVBus Through Cable\t:\t%d\n", psv_vdo1.psv_vdo1_pd2_v1_3.vbus_thru_cbl);
 
-                printf("\t\t\tUSB Signalling Support\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling,usb_speed_v2[psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling]);
+                printf("\t\t\tUSB Signalling Support\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling, usb_speed_v2[psv_vdo1.psv_vdo1_pd2_v1_3.usb_signalling]);
             }
             else
             {
@@ -329,19 +335,19 @@ void print_identity_data(int recepient, union libtypec_discovered_identity id)
 
                 printf("\t\t\tVDO Version\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vdo_version);
 
-                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type,psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type==2?"USB Type C":"Captive");
+                printf("\t\t\tPlug Type\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type, psv_vdo1.psv_vdo1_pd3_1_v1_3.plug_type == 2 ? "USB Type C" : "Captive");
 
                 printf("\t\t\tEPR Mode\t:\t%d\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.epr_mode);
 
-                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.latency,latency[psv_vdo1.psv_vdo1_pd3_1_v1_3.latency]);
+                printf("\t\t\tCable Latency\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.latency, latency[psv_vdo1.psv_vdo1_pd3_1_v1_3.latency]);
 
-                printf("\t\t\tCable Termination\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type, psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type?"VCONN not required":"VCONN required");
+                printf("\t\t\tCable Termination\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type, psv_vdo1.psv_vdo1_pd3_1_v1_3.termination_type ? "VCONN not required" : "VCONN required");
 
-                printf("\t\t\tVBus Voltage Max\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt,vbus_max_volt[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt]);
+                printf("\t\t\tVBus Voltage Max\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt, vbus_max_volt[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_max_volt]);
 
-                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap,vbus_cur_handling[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap]);
+                printf("\t\t\tVBus Current Capacity\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap, vbus_cur_handling[psv_vdo1.psv_vdo1_pd3_1_v1_3.vbus_current_cap]);
 
-                printf("\t\t\tUSB Highest Speed\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling,usb_speed_v3[psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling]);
+                printf("\t\t\tUSB Highest Speed\t:\t%d(%s)\n", psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling, usb_speed_v3[psv_vdo1.psv_vdo1_pd3_1_v1_3.usb_signalling]);
             }
         }
 
@@ -366,6 +372,8 @@ int main(void)
 {
 
     int ret;
+
+    names_init();
 
     ret = libtypec_init(session_info);
 
@@ -432,4 +440,6 @@ int main(void)
     }
 
     printf("\n");
+
+    names_exit();
 }
