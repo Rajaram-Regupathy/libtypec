@@ -121,6 +121,25 @@ static short get_bcd_from_rev_file(char *path)
 	}
 	return bcd;
 }
+
+static char get_pd_rev(char *path)
+{
+	char buf[10];
+	char rev = 0;
+
+	FILE *fp = fopen(path, "r");
+
+	if (fp)
+	{
+		fgets(buf, 10, fp);
+
+		rev = ((buf[0] - '0') << 4) | (buf[2] - '0');
+
+		fclose(fp);
+	}
+	return rev;
+}
+
 static int get_cable_plug_type(char *path)
 {
 	char buf[64];
@@ -303,11 +322,11 @@ static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_
 	{
 		sprintf(port_content, "%s/port%d-partner/%s", path_str, conn_num, "usb_power_delivery_revision");
 
-		conn_cap_data->port_rev = (get_bcd_from_rev_file(port_content) >> 8) & 0xFF;
+		conn_cap_data->partner_rev = get_pd_rev(port_content);
 
 		sprintf(port_content, "%s/port%d-cable/%s", path_str, conn_num, "usb_power_delivery_revision");
 
-		conn_cap_data->plug_rev = (get_bcd_from_rev_file(port_content) >> 8) & 0xFF;
+		conn_cap_data->cable_rev = get_pd_rev(port_content);
 	}
 	return 0;
 }

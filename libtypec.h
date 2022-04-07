@@ -34,6 +34,8 @@ SOFTWARE.
 #ifndef LIBTYPEC_H
 #define LIBTYPEC_H
 
+#include <stdint.h>
+
 struct libtypec_capabiliy_data
 {
     unsigned int bmAttributes;
@@ -58,8 +60,8 @@ struct libtypec_connector_cap_data
     unsigned swap2snk : 1;
     unsigned reserved : 2;
     unsigned reservedmsb : 12;
-    unsigned port_rev : 2;
-    unsigned plug_rev : 2;
+    unsigned partner_rev : 8;
+    unsigned cable_rev : 8;
 };
 
 struct altmode_data
@@ -73,12 +75,12 @@ union libtypec_discovered_identity
     char buf_disc_id[24];
     struct discovered_identity
     {
-        unsigned long cert_stat;
-        unsigned long id_header;
-        unsigned long product;
-        unsigned long product_type_vdo1;
-        unsigned long product_type_vdo2;
-        unsigned long product_type_vdo3;
+        uint32_t cert_stat;
+        uint32_t id_header;
+        uint32_t product;
+        uint32_t product_type_vdo1;
+        uint32_t product_type_vdo2;
+        uint32_t product_type_vdo3;
     } disc_id;
 };
 
