@@ -76,6 +76,22 @@ static unsigned long get_hex_dword_from_path(char *path)
 	return dword;
 }
 
+static unsigned long get_dword_from_path(char *path)
+{
+	char buf[64];
+	unsigned long dword;
+
+	FILE *fp = fopen(path, "r");
+
+	fgets(buf, 64, fp);
+
+	dword = strtoul(buf, NULL, 10);
+
+	fclose(fp);
+
+	return dword;
+}
+
 unsigned char get_opr_mode(char *path)
 {
 	char buf[64];
@@ -475,12 +491,13 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 	struct stat sb;
 	struct dirent *port_entry;
 	char path_str[512], port_content[512];
+	int ret;
 
 	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
-		printf("Incorrect connector number : failed to open, %s", path_str);
+		printf("Incorrect connector number : failed to open, %s\n", path_str);
 		return -1;
 	}
 
@@ -488,6 +505,46 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 
 	conn_sts->connect_sts = (lstat(path_str, &sb) == -1) ? 0 : 1;
 
+	sprintf(path_str, SYSFS_PSY_PATH "/ucsi-source-psy-USBC000:00%d", conn_num + 1);
+
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Non UCSI based Type-C connector Class - PSY not supported\n:%s\n", path_str);
+		return 0;
+	}
+	else
+	{
+		sprintf(port_content, "%s/%s", path_str, "online");
+
+		ret = get_hex_dword_from_path(port_content);
+
+		if (ret)
+		{
+			unsigned long cur, volt, op_mw, max_mw;
+
+			sprintf(port_content, "%s/%s", path_str, "current_now");
+
+			cur = get_dword_from_path(port_content) / 1000;
+
+			sprintf(port_content, "%s/%s", path_str, "voltage_now");
+
+			volt = get_dword_from_path(port_content) / 1000;
+
+			op_mw = (cur * volt) / (250 * 1000);
+
+			sprintf(port_content, "%s/%s", path_str, "current_max");
+
+			cur = get_dword_from_path(port_content) / 1000;
+
+			sprintf(port_content, "%s/%s", path_str, "voltage_max");
+
+			volt = get_dword_from_path(port_content) / 1000;
+
+			max_mw = (cur * volt) / (250 * 1000);
+
+			conn_sts->rdo = ((op_mw << 10)) | (max_mw)&0x3FF;
+		}
+	}
 	return 0;
 }
 

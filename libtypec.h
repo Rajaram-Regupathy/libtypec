@@ -115,7 +115,7 @@ struct libtypec_cable_property
 };
 
 #define LIBTYPEC_MAJOR_VERSION 0
-#define LIBTYPEC_MINOR_VERSION 1
+#define LIBTYPEC_MINOR_VERSION 2
 
 #define LIBTYPEC_VERSION_INDEX 0
 #define LIBTYPEC_KERNEL_INDEX 1
@@ -146,6 +146,10 @@ struct libtypec_cable_property
 #define GET_BATTERY_CAP 2
 #define GET_BATTERY_STATUS 3
 #define DISCOVER_ID_REQ 4
+
+#define POWER_OP_MODE_PD 3
+#define POWER_OP_MODE_TC_1_5 4
+#define POWER_OP_MODE_TC_3 5
 
 int libtypec_init(char **session_info);
 int libtypec_exit(void);

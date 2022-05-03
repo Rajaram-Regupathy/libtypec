@@ -36,6 +36,7 @@ SOFTWARE.
 #include "libtypec.h"
 
 #define SYSFS_TYPEC_PATH "/sys/class/typec"
+#define SYSFS_PSY_PATH "/sys/class/power_supply"
 
 /**
  * @brief
