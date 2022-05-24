@@ -22,11 +22,15 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <getopt.h>
+
 #include "../libtypec.h"
 #include "lstypec.h"
 #include "names.h"
-#include <stdlib.h>
-#include <stdint.h>
 
 struct libtypec_capabiliy_data get_cap_data;
 struct libtypec_connector_cap_data conn_data;
@@ -36,7 +40,7 @@ union libtypec_discovered_identity id;
 
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
-int verbose = 1;
+int verbose = 0;
 
 enum product_type get_cable_product_type(short rev, uint32_t id)
 {
@@ -102,11 +106,11 @@ enum product_type get_partner_product_type(short rev, uint32_t id)
 
     char dfp_supported = 0;
     if ((id & pd_dfp_product_type_mask) == pd3p0_dfp_hub)
-      ufp_supported = 1;
+      dfp_supported = 1;
     else if ((id & pd_dfp_product_type_mask) == pd3p0_dfp_host)
-      ufp_supported = 1;
+      dfp_supported = 1;
     else if ((id & pd_dfp_product_type_mask) == pd3p0_power_brick)
-      ufp_supported = 1;
+      dfp_supported = 1;
 
     if (ufp_supported && dfp_supported)
       return product_type_pd3p0_drd;
@@ -128,11 +132,11 @@ enum product_type get_partner_product_type(short rev, uint32_t id)
 
     char dfp_supported = 0;
     if ((id & pd_dfp_product_type_mask) == pd3p1_dfp_hub)
-      ufp_supported = 1;
+      dfp_supported = 1;
     else if ((id & pd_dfp_product_type_mask) == pd3p1_dfp_host)
-      ufp_supported = 1;
+      dfp_supported = 1;
     else if ((id & pd_dfp_product_type_mask) == pd3p1_power_brick)
-      ufp_supported = 1;
+      dfp_supported = 1;
 
     if (ufp_supported && dfp_supported)
       return product_type_pd3p1_drd;
@@ -146,41 +150,51 @@ enum product_type get_partner_product_type(short rev, uint32_t id)
   return product_type_other;
 }
 
-void print_vdo(uint32_t vdo, int num_fields, struct vdo_field vdo_fields[], char *vdo_field_desc[][MAX_FIELDS])
+void print_vdo(uint32_t vdo, int num_fields, const struct vdo_field vdo_fields[], const char *vdo_field_desc[][MAX_FIELDS])
 {
-  for (int i = 0; i < num_fields; i++){
-    if(!vdo_fields[i].print)
+  for (int i = 0; i < num_fields; i++) {
+    if (!vdo_fields[i].print)
       continue;
 
-    if(vdo_field_desc[i][0] != NULL)
-       printf("\t\t\t%s\t:\t%s\n", vdo_fields[i].name, vdo_field_desc[i][((vdo >> vdo_fields[i].index) & vdo_fields[i].mask)]);
-    else
-       printf("\t\t\t%s\t:\t0x%0x\n", vdo_fields[i].name, ((vdo >> vdo_fields[i].index) & vdo_fields[i].mask));
-
+      uint32_t field = (vdo >> vdo_fields[i].index) & vdo_fields[i].mask;
+      printf("      %s: %*d", vdo_fields[i].name, FIELD_WIDTH(MAX_FIELD_LENGTH - ((int) strlen(vdo_fields[i].name))), ((vdo >> vdo_fields[i].index) & vdo_fields[i].mask));
+      if (vdo_field_desc[i][0] != NULL) {
+        // decode field
+        printf(" (%s)\n", vdo_field_desc[i][field]);
+      } else if (strcmp(vdo_fields[i].name, "USB Vendor ID")  == 0) {
+        // decode vendor id
+         char vendor_str[128];
+         uint16_t svid = ((vdo >> vdo_fields[i].index) & vdo_fields[i].mask);
+         get_vendor_string(vendor_str, sizeof(vendor_str), svid);
+        printf(" (%s)\n", (vendor_str[0] == '\0' ? "unknown" : vendor_str));
+      } else {
+        // No decoding
+        printf("\n");
+      }
   }
 }
 
 void print_session_info()
 {
     printf("lstypec %d.%d Session Info\n", LSTYPEC_MAJOR_VERSION, LSTYPEC_MINOR_VERSION);
-    printf("\tUsing %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
-    printf("\t%s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
+    printf("  Using %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
+    printf("  %s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
 }
 
 void print_ppm_capability(struct libtypec_capabiliy_data ppm_data)
 {
     printf("\nUSB-C Platform Policy Manager Capability\n");
-    printf("\tNumber of Connectors:\t\t%d\n", ppm_data.bNumConnectors);
-    printf("\tNumber of Alternate Modes:\t%d\n", ppm_data.bNumAltModes);
-    printf("\tUSB Power Delivery Revision:\t%d.%d\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
-    printf("\tUSB Type-C Revision:\t\t%d.%d\n", (ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
+    printf("  Number of Connectors: %d\n", ppm_data.bNumConnectors);
+    printf("  Number of Alternate Modes: %d\n", ppm_data.bNumAltModes);
+    printf("  USB Power Delivery Revision: %d.%d\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
+    printf("  USB Type-C Revision: %d.%d\n", (ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
 }
 
 void print_conn_capability(struct libtypec_connector_cap_data conn_data)
 {
     char *opr_mode_str[] = {"Source", "Sink", "DRP", "Analog Audio", "Debug Accessory", "USB2", "USB3", "Alternate Mode"};
 
-    printf("\tOperation Mode:\t\t%s\n", opr_mode_str[conn_data.opr_mode]);
+    printf("  Operation Mode: %s\n", opr_mode_str[conn_data.opr_mode]);
 }
 
 void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num)
@@ -188,54 +202,83 @@ void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num)
     char *cable_type[] = {"Passive", "Active", "Unknown"};
     char *cable_plug_type[] = {"USB Type A", "USB Type B", "USB Type C", "Non-USB Type", "Unknown"};
 
-    printf("\tCable Property in Port %d:\n", conn_num);
-    printf("\t\tCable Type\t:\t%s\n", cable_type[cable_prop.cable_type]);
-    printf("\t\tCable Plug Type\t:\t%s\n", cable_plug_type[cable_prop.plug_end_type]);
+    printf("  Cable Property in Port %d:\n", conn_num);
+    printf("    Cable Type: %s\n", cable_type[cable_prop.cable_type]);
+    printf("    Cable Plug Type: %s\n", cable_plug_type[cable_prop.plug_end_type]);
 }
 
-void print_alternate_mode_data(int recipient, int num_mode, struct altmode_data *am_data)
-{
-
-    if (recipient == AM_CONNECTOR)
-    {
-        for (int i = 0; i < num_mode; i++)
-        {
-            printf("\tLocal Modes %d:\n", i);
-            printf("\t\tSVID\t:\t0x%04lx\n", am_data[i].svid);
-            printf("\t\tVDO\t:\t0x%04lx\n", am_data[i].vdo);
-        }
-    }
-
-    if (recipient == AM_SOP)
-    {
-        for (int i = 0; i < num_mode; i++)
-        {
-            printf("\tPartner Modes %d:\n", i);
-            printf("\t\tSVID\t:\t0x%04lx\n", am_data[i].svid);
-            printf("\t\tVDO\t:\t0x%04lx\n", am_data[i].vdo);
-        }
-    }
-
-    if (recipient == AM_SOP_PR)
-    {
-        for (int i = 0; i < num_mode; i++)
-        {
-            printf("\tCable Plug Modes %d:\n", i);
-            printf("\t\tSVID\t:\t0x%04lx\n", am_data[i].svid);
-            printf("\t\tVDO\t:\t0x%04lx\n", am_data[i].vdo);
-        }
-    }
-}
-
-void print_identity_data(int recipient, union libtypec_discovered_identity id)
+void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes, struct altmode_data *am_data)
 {
   char vendor_id[128];
+
+  if (recipient == AM_CONNECTOR) {
+    for (int i = 0; i < num_modes; i++) {
+      printf("  Local Mode %d:\n", i);
+      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    VDO: 0x%08x\n", am_data[i].vdo);
+    }
+  }
+
+  if (recipient == AM_SOP) {
+    for (int i = 0; i < num_modes; i++) {
+      printf("  Partner Mode %d:\n", i);
+      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    VDO: 0x%08x\n", am_data[i].vdo);
+      if (verbose) {
+        switch(am_data[i].svid){
+        case 0x8087:
+          print_vdo(am_data[i].vdo, 7, tbt3_sop_fields, tbt3_sop_field_desc);
+          break;
+        case 0xff01:
+          print_vdo(am_data[i].vdo, 7, dp_alt_mode_partner_fields, dp_alt_mode_partner_field_desc);
+          break;
+        default:
+          get_vendor_string(vendor_id, sizeof(vendor_id), am_data[i].svid);
+          printf("      VDO Decoding not supported for 0x%04x (%s)\n", am_data[i].svid, (vendor_id[0] == '\0' ? "unknown" : vendor_id));
+          break;
+        }
+      }
+    }
+  }
+
+  if (recipient == AM_SOP_PR) {
+    for (int i = 0; i < num_modes; i++) {
+      printf("  Cable Plug Modes %d:\n", i);
+      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    VDO: 0x%08x\n", am_data[i].vdo);
+
+      if (verbose) {
+        switch(am_data[i].svid){
+        case 0x8087:
+          print_vdo(am_data[i].vdo, 7, tbt3_sop_pr_fields, tbt3_sop_pr_field_desc);
+          break;
+        case 0xff01:
+          if ((id_header & ACTIVE_CABLE_MASK) == ACTIVE_CABLE_COMP) {
+            print_vdo(am_data[i].vdo, 7, dp_alt_mode_active_cable_fields, dp_alt_mode_active_cable_field_desc);
+          } else {
+            get_vendor_string(vendor_id, sizeof(vendor_id), am_data[i].svid);
+            printf("      SVID Decoding not supported for 0x%04x (%s)\n", am_data[i].svid, (vendor_id[0] == '\0' ? "unknown" : vendor_id));
+          }
+          break;
+        default:
+          get_vendor_string(vendor_id, sizeof(vendor_id), am_data[i].svid);
+          printf("      SVID Decoding not supported for 0x%04x (%s)\n", am_data[i].svid, (vendor_id[0] == '\0' ? "unknown" : vendor_id));
+          break;
+        }
+      }
+    }
+  }
+}
+
+
+void print_identity_data(int recipient, union libtypec_discovered_identity id, struct libtypec_connector_cap_data conn_data)
+{
   union id_header id_hdr_val;
   id_hdr_val.id_hdr = id.disc_id.id_header;
 
   if (recipient == AM_SOP)
   {
-    printf("\tPartner Identity :\n");
+    printf("  Partner Identity :\n");
 
     // Partner ID
     if (verbose)
@@ -244,39 +287,33 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id)
       switch (conn_data.partner_rev)
       {
         case 0x20:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd2p0.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 6, pd2p0_partner_id_header_fields, pd2p0_partner_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd2p0.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd2p0_cert_stat_fields, pd2p0_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd2p0_product_fields, pd2p0_product_field_desc);
           break;
         case 0x30:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3p0.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 7, pd3p0_partner_id_header_fields, pd3p0_partner_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3p0.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd3p0_cert_stat_fields, pd3p0_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p0_product_fields, pd3p0_product_field_desc);
           break;
         case 0x31:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3p1.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 8, pd3p1_partner_id_header_fields, pd3p1_partner_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3p1.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd3p1_cert_stat_fields, pd3p1_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p1_product_fields, pd3p1_product_field_desc);
           break;
         default:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           break;
       }
 
@@ -285,83 +322,83 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id)
       switch (partner_product_type)
       {
         case product_type_pd2p0_ama:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 11, pd2p0_ama_fields, pd2p0_ama_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_ama:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 8, pd3p0_ama_fields, pd3p0_ama_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_vpd:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 10, pd3p0_vpd_fields, pd3p0_vpd_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_ufp:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 6, pd3p0_ufp_vdo1_fields, pd3p0_ufp_vdo1_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo2), 6, pd3p0_ufp_vdo2_fields, pd3p0_ufp_vdo2_field_desc);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_dfp:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 5, pd3p0_dfp_fields, pd3p0_dfp_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_drd:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 6, pd3p0_ufp_vdo1_fields, pd3p0_ufp_vdo1_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo2), 6, pd3p0_ufp_vdo2_fields, pd3p0_ufp_vdo2_field_desc);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo3), 5, pd3p0_dfp_fields, pd3p0_dfp_field_desc);
           break;
         case product_type_pd3p1_ufp:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 10, pd3p1_ufp_fields, pd3p1_ufp_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p1_dfp:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 6, pd3p1_dfp_fields, pd3p1_dfp_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p1_drd:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 10, pd3p1_ufp_fields, pd3p1_ufp_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo3), 6, pd3p1_dfp_fields, pd3p1_dfp_field_desc);
         default:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
       }
     }
     else
     {
-      printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-      printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
-      printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
-      printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
-      printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-      printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+      printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
+      printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
+      printf("    Product: 0x%08x\n", id.disc_id.product);
+      printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
+      printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+      printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
     }
   }
   else if (recipient == AM_SOP_PR)
   {
 
-    printf("\tCable Identity :\n");
+    printf("  Cable Identity :\n");
 
     // Partner ID
     if (verbose)
@@ -370,39 +407,33 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id)
       switch (conn_data.cable_rev)
       {
         case 0x20:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd2p0.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 6, pd2p0_cable_id_header_fields, pd2p0_cable_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd2p0.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd2p0_cert_stat_fields, pd2p0_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd2p0_product_fields, pd2p0_product_field_desc);
           break;
         case 0x30:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3p0.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 7, pd3p0_cable_id_header_fields, pd3p0_cable_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3p0.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd3p0_cert_stat_fields, pd3p0_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p0_product_fields, pd3p0_product_field_desc);
           break;
         case 0x31:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          get_vendor_string(vendor_id, sizeof(vendor_id), id_hdr_val.id_hdr_pd3p1.usb_vendor_id);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 8, pd3p1_cable_id_header_fields, pd3p1_cable_id_header_field_desc);
-          printf("\t\t\tDecoded VID\t:\t0x%04x (%s)\n", id_hdr_val.id_hdr_pd3p1.usb_vendor_id, (vendor_id == NULL ? "unknown" : vendor_id));
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
           print_vdo(((uint32_t) id.disc_id.cert_stat), 1, pd3p1_cert_stat_fields, pd3p1_cert_stat_field_desc);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p1_product_fields, pd3p1_product_field_desc);
           break;
         default:
-          printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-          printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
-          printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
+          printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
+          printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
+          printf("    Product: 0x%08x\n", id.disc_id.product);
           break;
       }
 
@@ -411,64 +442,64 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id)
       switch (cable_product_type)
       {
         case product_type_pd2p0_passive_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 15, pd2p0_passive_cable_fields, pd2p0_passive_cable_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd2p0_active_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 15, pd2p0_active_cable_fields, pd2p0_active_cable_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_passive_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 13, pd3p0_passive_cable_fields, pd3p0_passive_cable_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p0_active_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("   Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 15, pd3p0_active_cable_vdo1_fields, pd3p0_active_cable_vdo1_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo2), 15, pd3p0_active_cable_vdo2_fields, pd3p0_active_cable_vdo2_field_desc);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p1_passive_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 13, pd3p1_passive_cable_fields, pd3p1_passive_cable_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p1_active_cable:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 15, pd3p1_active_cable_vdo1_fields, pd3p1_active_cable_vdo1_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo2), 15, pd3p1_active_cable_vdo2_fields, pd3p1_active_cable_vdo2_field_desc);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         case product_type_pd3p1_vpd:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo1), 10, pd3p1_vpd_fields, pd3p0_vpd_field_desc);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
         default:
-          printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
-          printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-          printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+          printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
+          printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+          printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           break;
       }
     }
     else
     {
-      printf("\t\tID Header\t:\t0x%08lx\n", id.disc_id.id_header);
-      printf("\t\tCert Stat\t:\t0x%08lx\n", id.disc_id.cert_stat);
-      printf("\t\tProduct\t\t:\t0x%08lx\n", id.disc_id.product);
-      printf("\t\tProduct VDO 1\t:\t0x%08lx\n", id.disc_id.product_type_vdo1);
-      printf("\t\tProduct VDO 2\t:\t0x%08lx\n", id.disc_id.product_type_vdo2);
-      printf("\t\tProduct VDO 3\t:\t0x%08lx\n", id.disc_id.product_type_vdo3);
+      printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
+      printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
+      printf("    Product: 0x%08x\n", id.disc_id.product);
+      printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
+      printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
+      printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
     }
   }
 }
@@ -484,78 +515,86 @@ void lstypec_print(char *val, int type)
         printf("lstypec - INFO - %s\n", val);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+  int ret, opt, num_modes;
 
-    int ret;
+  // Process Command Args
+  static const struct option options[] = {
+    {"verbose", 0, 0, 'v'},
+    {"help", 0, 0, 'h'},
+    {0, 0, 0, 0},
+  };
 
-    names_init();
+  while ((opt = getopt_long(argc, argv, "vh", options, NULL)) != -1) {
+    switch (opt) {
+    case 'v':
+      verbose = 1;
+      break;
+    case 'h':
+      printf("lstypec will print information about connected USB-C devices\n-v to increase verbosity\n-h for help\n");
+      return 0;
+    }
+  }
 
-    ret = libtypec_init(session_info);
+  names_init();
 
-    if (ret < 0)
-        lstypec_print("Failed in Initializing libtypec", LSTYPEC_ERROR);
+  // Initialize libtypec and print session info
+  ret = libtypec_init(session_info);
+  if (ret < 0)
+    lstypec_print("Failed in Initializing libtypec", LSTYPEC_ERROR);
 
-    print_session_info();
+  print_session_info();
 
-    ret = libtypec_get_capability(&get_cap_data);
+  // PPM Capabilities
+  ret = libtypec_get_capability(&get_cap_data);
+  if (ret < 0)
+    lstypec_print("Failed in Get Capability", LSTYPEC_ERROR);
 
-    if (ret < 0)
-        lstypec_print("Failed in Get Capability", LSTYPEC_ERROR);
+  print_ppm_capability(get_cap_data);
 
-    print_ppm_capability(get_cap_data);
+  for (int i = 0; i < get_cap_data.bNumConnectors; i++) {
+    // Resetting port properties
+    cable_prop.cable_type = CABLE_TYPE_UNKNOWN;
+    cable_prop.plug_end_type = PLUG_TYPE_OTH;
 
-    for (int i = 0; i < get_cap_data.bNumConnectors; i++)
-    {
-        /* Resetting port properties */
-        cable_prop.cable_type = CABLE_TYPE_UNKNOWN;
-        cable_prop.plug_end_type = PLUG_TYPE_OTH;
+    // Connector Capabilities
+    printf("\nConnector %d Capablity/Status\n", i);
+    libtypec_get_conn_capability(i, &conn_data);
+    print_conn_capability(conn_data);
 
-        printf("\nConnector %d Capablity/Status\n", i);
+    // Cable Properties
+    ret = libtypec_get_cable_properties(i, &cable_prop);
+    if (ret >= 0)
+      print_cable_prop(cable_prop, i);
 
-        libtypec_get_conn_capability(i, &conn_data);
+    // Supported Alternate Modes
+    printf("  Alternate Modes Supported:\n");
+    num_modes = libtypec_get_alternate_modes(AM_CONNECTOR, i, am_data);
+    ret = libtypec_get_alternate_modes(AM_CONNECTOR, i, am_data);
+    if (ret > 0)
+      print_alternate_mode_data(AM_CONNECTOR, 0x0, num_modes, am_data);
+    else
+      printf("    No Local Modes listed with typec class\n");
 
-        print_conn_capability(conn_data);
-
-        ret = libtypec_get_cable_properties(i, &cable_prop);
-
-        if (ret >= 0)
-            print_cable_prop(cable_prop, i);
-
-        printf("\tAlternate Modes Supported:\n");
-
-        ret = libtypec_get_alternate_modes(AM_CONNECTOR, i, am_data);
-
-        if (ret > 0)
-            print_alternate_mode_data(AM_CONNECTOR, ret, am_data);
-        else
-            printf("\t\tNo Local Modes listed with typec class\n");
-
-        ret = libtypec_get_connector_status(i, &conn_sts);
-
-        if ((ret == 0) && conn_sts.connect_sts)
-        {
-            ret = libtypec_get_alternate_modes(AM_SOP_PR, i, am_data);
-
-            print_alternate_mode_data(AM_SOP_PR, ret, am_data);
-
-            ret = libtypec_get_pd_message(AM_SOP_PR, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
-
-            if (ret >= 0)
-                print_identity_data(AM_SOP_PR, id);
-
-            ret = libtypec_get_alternate_modes(AM_SOP, i, am_data);
-
-            print_alternate_mode_data(AM_SOP, ret, am_data);
-
-            ret = libtypec_get_pd_message(AM_SOP, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
-
-            if (ret >= 0)
-                print_identity_data(AM_SOP, id);
-        }
+    // Cable
+    num_modes = libtypec_get_alternate_modes(AM_SOP_PR, i, am_data);
+    ret = libtypec_get_pd_message(AM_SOP_PR, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
+    if (ret >= 0) {
+      print_alternate_mode_data(AM_SOP_PR, id.disc_id.id_header, num_modes, am_data);
+      print_identity_data(AM_SOP_PR, id, conn_data);
     }
 
-    printf("\n");
+    // Partner
+    num_modes = libtypec_get_alternate_modes(AM_SOP, i, am_data);
+    ret = libtypec_get_pd_message(AM_SOP, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
+    if (ret >= 0) {
+      print_alternate_mode_data(AM_SOP, id.disc_id.id_header, num_modes, am_data);
+      print_identity_data(AM_SOP, id, conn_data);
+    }
+  }
 
-    names_exit();
+  printf("\n");
+  names_exit();
 }
+
