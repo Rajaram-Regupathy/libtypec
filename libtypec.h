@@ -66,8 +66,8 @@ struct libtypec_connector_cap_data
 
 struct altmode_data
 {
-    unsigned long svid;
-    unsigned long vdo;
+    uint32_t svid;
+    uint32_t vdo;
 };
 
 union libtypec_discovered_identity

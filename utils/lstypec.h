@@ -21,11 +21,14 @@
  *
  */
 
+
+
 #include <stdio.h>
-#include "../libtypec.h"
-#include "names.h"
 #include <stdlib.h>
 #include <stdint.h>
+
+#include "../libtypec.h"
+#include "names.h"
 
 #define LSTYPEC_MAJOR_VERSION 0
 #define LSTYPEC_MINOR_VERSION 2
@@ -34,6 +37,12 @@
 #define LSTYPEC_INFO 2
 
 #define MAX_FIELDS 16
+#define ACTIVE_CABLE_MASK 0x38000000
+#define ACTIVE_CABLE_COMP 0x20000000
+
+//used for spacing
+#define MAX_FIELD_LENGTH 32
+#define FIELD_WIDTH(n) n > 0 ? n : 0
 
 enum product_type {
   product_type_other = 0,
@@ -825,6 +834,88 @@ const char *pd3p1_dfp_field_desc[][MAX_FIELDS] = {
   {"Version 1.0", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved"},
 };
 
+// Alternate mode VDOs
+const struct vdo_field dp_alt_mode_partner_fields[] = {
+  {"Port Capability", 1, 0, 0x3},
+  {"Signaling for Transport of DisplaPort Protocol", 1, 2, 0xf},
+  {"Receptacle Indication", 1, 6, 0x1},
+  {"USB 2.0 Signaling Not Used", 1, 7, 0x1},
+  {"DP Source Device Pin Suported", 1, 8, 0xff},
+  {"DP Sink Device Pin Supported", 1, 16, 0xff},
+  {"Reserved", 0, 24, 0xff},
+};
+
+const char *dp_alt_mode_partner_field_desc[][MAX_FIELDS] = {
+  {"Reserved", "DP Sink Deice Capable", "DP Source Device Capable", "Both Sink and Source Device Capable"},
+  {NULL},
+  {"DP interface presents as a plug", "DP interface presents as a receptacle"},
+  {"USB 2.0 may be needed", "USB 2.0 not needed"},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+const struct vdo_field dp_alt_mode_active_cable_fields[] = {
+  {"Reserved", 0, 0, 0x3},
+  {"Signaling for Transport of DisplaPort Protocol", 1, 2, 0xf},
+  {"Reserved", 0, 6, 0x3},
+  {"DP Source Device Pin Assignments Supported", 1, 8, 0xff},
+  {"DP Sink Device Pin Assignments Supported", 1, 16, 0xff},
+  {"Reserved", 0, 24, 0xff},
+};
+
+const char *dp_alt_mode_active_cable_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+const struct vdo_field tbt3_sop_fields[] = {
+  {"TBT Alternate Mode", 1, 0, 0xffff},
+  {"TBT Adapter", 1, 16, 0x1},
+  {"Reserved", 1, 17, 0x1ff},
+  {"Intel Specific B0", 1, 26, 0x1},
+  {"Reserved", 1, 27, 0x7},
+  {"Vendor Specific B0", 1, 30, 0x1},
+  {"Vendor Specific B1", 1, 31, 0x1},
+};
+
+const char *tbt3_sop_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {"TBT3 Adapter", "TBT2 Legacy Adapter"},
+  {NULL},
+  {"Not Supported", "Supported"},
+  {NULL},
+  {"Not Supported", "Supported"},
+  {"Not Supported", "Supported"},
+};
+
+const struct vdo_field tbt3_sop_pr_fields[] = {
+  {"TBT Alternate Mode", 1, 0, 0xffff},
+  {"Cable Speed", 1, 16, 0x7},
+  {"TBT Rounded Support", 1, 19, 0x3},
+  {"Cable Type", 1, 21, 0x1},
+  {"Re-timer", 1, 22, 0x1},
+  {"Active Cable Plug Link Training", 1, 23, 0x1},
+  {"Reserved", 0, 24, 0x1},
+  {"Active_Passive", 1, 25, 0x1},
+  {"Reserved", 0, 26, 0x3f},
+};
+
+const char *tbt3_sop_pr_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {"Reserved", "USB 3.1 Gen1 (10 Gbps TBT Support)", "10 Gbps (USB 3.2 Gen1 and Gen2 passive cables)", "10 Gbps and 20 Gbps (TBT 3rd Gen active cables and 20 Gbps passive cables)", "Reserved", "Reserved", "Reserved", "Reserved"},
+  {"3rd Gen Non-Rounded TBT", "3rd & 4th Gen Rounded and Non-Rounded TBT", "Reserved", "Reserved"},
+  {"Non-Optical", "Optical"},
+  {"Not re-timer", "Re-timer"},
+  {"Active with bi-directional LSRX", "Active with uni-directional LSRX"},
+  {NULL},
+  {"Passive Cable", "Active Cable"},
+  {NULL},
+};
 
 struct libtypec_capabiliy_data get_cap_data;
 struct libtypec_connector_cap_data conn_data;
@@ -835,15 +926,11 @@ union libtypec_discovered_identity id;
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
 
-// TODO: Add comments describing each function
-// Used to determine a cable plug's product type
 enum product_type get_cable_product_type(short rev, uint32_t id);
 
-// Used to determine a partner's product type
 enum product_type get_partner_product_type(short rev, uint32_t id);
 
-//print_vdo will expand and print a VDO
-void print_vdo(uint32_t vdo, int num_fields, struct vdo_field vdo_fields[], char *vdo_field_desc[][MAX_FIELDS]);
+void print_vdo(uint32_t vdo, int num_fields, const struct vdo_field vdo_fields[], const char *vdo_field_desc[][MAX_FIELDS]);
 
 void print_session_info();
 
@@ -853,9 +940,9 @@ void print_conn_capability(struct libtypec_connector_cap_data conn_data);
 
 void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num);
 
-void print_alternate_mode_data(int recipient, int num_mode, struct altmode_data *am_data);
+void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes, struct altmode_data *am_data);
 
-void print_identity_data(int recipient, union libtypec_discovered_identity id);
+void print_identity_data(int recipient, union libtypec_discovered_identity id, struct libtypec_connector_cap_data conn_data);
 
 void lstypec_print(char *val, int type);
 
