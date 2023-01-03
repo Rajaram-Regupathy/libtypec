@@ -216,6 +216,20 @@ void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes,
       printf("  Local Mode %d:\n", i);
       printf("    SVID: 0x%04x\n", am_data[i].svid);
       printf("    VDO: 0x%08x\n", am_data[i].vdo);
+      if (verbose) {
+        switch(am_data[i].svid){
+        case 0x8087:
+          print_vdo(am_data[i].vdo, 7, tbt3_sop_fields, tbt3_sop_field_desc);
+          break;
+        case 0xff01:
+          print_vdo(am_data[i].vdo, 7, dp_alt_mode_partner_fields, dp_alt_mode_partner_field_desc);
+          break;
+        default:
+          get_vendor_string(vendor_id, sizeof(vendor_id), am_data[i].svid);
+          printf("      VDO Decoding not supported for 0x%04x (%s)\n", am_data[i].svid, (vendor_id[0] == '\0' ? "unknown" : vendor_id));
+          break;
+        }
+      }
     }
   }
 
@@ -570,26 +584,28 @@ int main(int argc, char *argv[])
 
     // Supported Alternate Modes
     printf("  Alternate Modes Supported:\n");
+  
     num_modes = libtypec_get_alternate_modes(AM_CONNECTOR, i, am_data);
-    ret = libtypec_get_alternate_modes(AM_CONNECTOR, i, am_data);
-    if (ret > 0)
+    if (num_modes > 0)
       print_alternate_mode_data(AM_CONNECTOR, 0x0, num_modes, am_data);
     else
       printf("    No Local Modes listed with typec class\n");
 
     // Cable
     num_modes = libtypec_get_alternate_modes(AM_SOP_PR, i, am_data);
+    if (num_modes >= 0) 
+      print_alternate_mode_data(AM_SOP_PR, id.disc_id.id_header, num_modes, am_data);
     ret = libtypec_get_pd_message(AM_SOP_PR, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
     if (ret >= 0) {
-      print_alternate_mode_data(AM_SOP_PR, id.disc_id.id_header, num_modes, am_data);
       print_identity_data(AM_SOP_PR, id, conn_data);
     }
 
     // Partner
     num_modes = libtypec_get_alternate_modes(AM_SOP, i, am_data);
+    if (num_modes >= 0) 
+      print_alternate_mode_data(AM_SOP, id.disc_id.id_header, num_modes, am_data);
     ret = libtypec_get_pd_message(AM_SOP, i, 24, DISCOVER_ID_REQ, id.buf_disc_id);
     if (ret >= 0) {
-      print_alternate_mode_data(AM_SOP, id.disc_id.id_header, num_modes, am_data);
       print_identity_data(AM_SOP, id, conn_data);
     }
   }
