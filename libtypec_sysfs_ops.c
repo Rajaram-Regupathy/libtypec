@@ -67,27 +67,32 @@ static unsigned long get_hex_dword_from_path(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 64, fp);
+	if (fp)
+	{
+		fgets(buf, 64, fp);
 
-	dword = strtol(buf, NULL, 16);
+		dword = strtol(buf, NULL, 16);
 
-	fclose(fp);
-
+		fclose(fp);
+	}
 	return dword;
 }
 
 static unsigned long get_dword_from_path(char *path)
 {
 	char buf[64];
-	unsigned long dword;
+	unsigned long dword=0;
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 64, fp);
+	if (fp)
+	{
+		fgets(buf, 64, fp);
 
-	dword = strtoul(buf, NULL, 10);
+		dword = strtoul(buf, NULL, 10);
 
-	fclose(fp);
+		fclose(fp);
+	}
 
 	return dword;
 }
@@ -239,7 +244,175 @@ static int get_cable_mode_support(char *path)
 
 	return ret;
 }
+static unsigned int get_variable_supply_pdo(char *path, int src_snk)
+{
+	char path_str[512], port_content[512];
+	union libtypec_variable_supply_src var_src;
+	unsigned int tmp;
 
+	var_src.obj_var_sply.type = 1;
+	
+	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	tmp = get_dword_from_path(port_content);
+	var_src.obj_var_sply.max_volt = tmp/50;
+
+	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	tmp = get_dword_from_path(port_content);
+	var_src.obj_var_sply.min_volt = tmp/50;
+
+	if(src_snk)
+	{
+		sprintf(port_content, "%s/%s", path, "maximum_current");
+		tmp = get_dword_from_path(port_content);
+		var_src.obj_var_sply.max_cur = tmp/10;
+	}
+	else
+	{
+		sprintf(port_content, "%s/%s", path, "operational_current");
+		tmp = get_dword_from_path(port_content);
+		var_src.obj_var_sply.max_cur = tmp/10;		
+	}
+	return var_src.variable_supply;
+
+}
+static unsigned int get_battery_supply_pdo(char *path, int src_snk)
+{
+	char path_str[512], port_content[512];
+	union libtypec_battery_supply_src bat_src;
+	unsigned int tmp;
+
+	bat_src.obj_bat_sply.type = 2;
+
+	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	tmp = get_dword_from_path(port_content);
+	bat_src.obj_bat_sply.max_volt = tmp/50;
+
+	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	tmp = get_dword_from_path(port_content);
+	bat_src.obj_bat_sply.min_volt = tmp/50;
+	
+	if(src_snk)
+	{
+		sprintf(port_content, "%s/%s", path, "maximum_power");
+		tmp = get_dword_from_path(port_content);
+		bat_src.obj_bat_sply.max_pwr = tmp/250;
+	}
+	else
+	{
+		sprintf(port_content, "%s/%s", path, "operational_power");
+		tmp = get_dword_from_path(port_content);
+		bat_src.obj_bat_sply.max_pwr = tmp/250;
+
+
+	}
+	return bat_src.battery_supply;
+
+}
+static unsigned int get_programmable_supply_pdo(char *path, int src_snk)
+{
+	char path_str[512], port_content[512];
+	union libtypec_pps_src pps_src={0};
+	unsigned int tmp;
+
+	pps_src.obj_pps_sply.type = 3;
+	if(src_snk)
+	{
+		sprintf(port_content, "%s/%s", path, "pps_power_limited");
+		pps_src.obj_pps_sply.pwr_ltd = get_dword_from_path(port_content);
+	}
+
+	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	tmp = get_dword_from_path(port_content);
+	pps_src.obj_pps_sply.max_volt = tmp/100;
+
+	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	tmp = get_dword_from_path(port_content);
+	pps_src.obj_pps_sply.min_volt = tmp/100;
+
+	sprintf(port_content, "%s/%s", path, "maximum_current");
+	tmp = get_dword_from_path(port_content);
+	pps_src.obj_pps_sply.max_cur = tmp/50;
+
+
+	return pps_src.spr_pps_supply;
+
+}
+static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
+{
+	char path_str[512], port_content[512];
+	union libtypec_fixed_supply_src fxd_src;
+	union libtypec_fixed_supply_snk fxd_snk;
+	
+	unsigned int tmp;
+
+	if(src_snk)
+	{
+		fxd_src.obj_fixed_sply.type = 0;
+		
+		sprintf(port_content, "%s/%s", path, "dual_role_power");
+		fxd_src.obj_fixed_sply.dual_pwr = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "usb_suspend_supported");
+		fxd_src.obj_fixed_sply.usb_suspend = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "unconstrained_power");
+		fxd_src.obj_fixed_sply.uncons_pwr = get_dword_from_path(path);
+		
+		sprintf(port_content, "%s/%s", path, "usb_communication_capable");
+		fxd_src.obj_fixed_sply.usb_comm = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "dual_role_data");
+		fxd_src.obj_fixed_sply.drd = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "unchunked_extended_messages_supported");
+		fxd_src.obj_fixed_sply.unchunked = get_dword_from_path(port_content);
+		
+		fxd_src.obj_fixed_sply.epr = 0;
+		
+		fxd_src.obj_fixed_sply.peak_cur = 0;
+		
+		sprintf(port_content, "%s/%s", path, "voltage");
+		tmp = get_dword_from_path(port_content);
+		fxd_src.obj_fixed_sply.volt = tmp/50;
+		
+		sprintf(port_content, "%s/%s", path, "maximum_current");
+		tmp = get_dword_from_path(port_content);
+		fxd_src.obj_fixed_sply.max_cur = tmp/10;
+
+		return fxd_src.fixed_supply;
+	}
+	else
+	{
+		fxd_snk.obj_fixed_supply.type = 0;
+		
+		sprintf(port_content, "%s/%s", path, "dual_role_power");
+		fxd_snk.obj_fixed_supply.drp = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "unconstrained_power");
+		fxd_snk.obj_fixed_supply.uncons_pwr = get_dword_from_path(path);
+		
+		sprintf(port_content, "%s/%s", path, "usb_communication_capable");
+		fxd_snk.obj_fixed_supply.usb_comm_cap = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "dual_role_data");
+		fxd_snk.obj_fixed_supply.drd = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "fast_role_swap_current");
+		fxd_snk.obj_fixed_supply.fr_swp = get_dword_from_path(port_content);
+		
+		sprintf(port_content, "%s/%s", path, "voltage");
+		tmp = get_dword_from_path(port_content);
+		fxd_snk.obj_fixed_supply.volt = tmp/50;
+		
+		sprintf(port_content, "%s/%s", path, "operational_current");
+		tmp = get_dword_from_path(port_content);
+		fxd_snk.obj_fixed_supply.opr_cur = tmp/10;
+
+		return fxd_snk.fixed_supply;
+
+	}
+
+}
 static int libtypec_sysfs_init(char **session_info)
 {
 
@@ -659,6 +832,76 @@ static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int nu
 	return 0;
 }
 
+static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data)
+{
+	struct stat sb;
+	int num_pdos_read = 0;
+	char path_str[512], port_content[512];
+	DIR *typec_path , *port_path;
+	struct dirent *typec_entry, *port_entry;
+
+	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+
+	if (lstat(path_str, &sb) == -1)
+	{
+		printf("Incorrect connector number : failed to open, %s", path_str);
+		return -1;
+	}
+
+	if (partner == 0)
+	{
+		if(src_snk)
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/source-capabilities", conn_num);
+		else
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/sink-capabilities", conn_num);
+	}
+	else
+	{
+		if(src_snk)
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/source-capabilities", conn_num);
+		else
+			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/sink-capabilities", conn_num);		
+	}
+	if (lstat(path_str, &sb) == -1)
+		return -1;
+
+	typec_path = opendir(path_str);
+
+	while ((typec_entry = readdir(typec_path)))
+	{
+		memset(port_content,0,512);
+		sprintf(port_content, "%s/%s", path_str,typec_entry->d_name);
+
+		if(strstr(typec_entry->d_name, "fixed"))
+		{
+			pdo_data[num_pdos_read++] = get_fixed_supply_pdo(port_content,src_snk);
+
+		}
+		else if(strstr(typec_entry->d_name, "variable"))
+		{
+			pdo_data[num_pdos_read++] = get_variable_supply_pdo(port_content,src_snk);
+
+		}
+		else if(strstr(typec_entry->d_name, "battery"))
+		{
+			pdo_data[num_pdos_read++] = get_battery_supply_pdo(port_content,src_snk);
+
+		}
+		else if(strstr(typec_entry->d_name, "programmable"))
+		{
+			pdo_data[num_pdos_read++] = get_programmable_supply_pdo(port_content,src_snk);
+
+		}
+		
+		
+	}
+	
+	num_pdo = num_pdos_read;
+
+	return num_pdos_read;
+
+}
+
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.init = libtypec_sysfs_init,
 	.exit = libtypec_sysfs_exit,
@@ -667,7 +910,7 @@ const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.get_alternate_modes = libtypec_sysfs_get_alternate_modes,
 	.get_cam_supported_ops = NULL,
 	.get_current_cam_ops = NULL,
-	.get_pdos_ops = NULL,
+	.get_pdos_ops = libtypec_sysfs_get_pdos_ops,
 	.get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
 	.get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
 	.get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,

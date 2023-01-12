@@ -264,3 +264,31 @@ int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp
 
     return cur_libtypec_os_backend->get_pd_message_ops(recipient, conn_num, num_bytes, resp_type, pd_msg_resp);
 }
+
+/**
+ * This function shall be used to get PDOs from local and partner Policy Managers
+ *
+ * \param  conn_num Represents connector to be queried
+ *
+ * \param  partner Set to TRUE to retrieve partner PDOs
+ *
+ * \param  offset Index from which PDO needs to be retrieved 
+ *
+ * \param  num_pdo Represents number of PDOs to be retrieved
+ *
+ * \param  src_snk Set to TRUE to retrieve Source PDOs
+ *
+ * \param  type Represents type of Source PDOs requested
+ *
+ * \param  pdo_data Holds PDO data retrieved 
+ * 
+ * \returns PDO retrieved on success
+ */
+int libtypec_get_pdos (int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data)
+{
+     if (!cur_libtypec_os_backend)
+        return -EIO;
+
+    return cur_libtypec_os_backend->get_pdos_ops(conn_num,  partner, offset,  num_pdo,  src_snk, type, pdo_data);
+
+}

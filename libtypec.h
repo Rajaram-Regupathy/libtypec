@@ -114,6 +114,135 @@ struct libtypec_cable_property
     unsigned reserved_2 : 4;
 };
 
+union libtypec_fixed_supply_src
+{
+    unsigned fixed_supply;
+    struct fixed_supply_bits
+    {
+        unsigned type:2;
+        unsigned dual_pwr:1;
+        unsigned usb_suspend:1;
+        unsigned uncons_pwr:1;
+        unsigned usb_comm:1;
+        unsigned drd:1;
+        unsigned unchunked:1;
+        unsigned epr:1;
+        unsigned rsvd:1;
+        unsigned peak_cur:2;
+        unsigned volt:10;
+        unsigned max_cur:10;
+    }obj_fixed_sply;
+    
+};
+
+union libtypec_variable_supply_src
+{
+    unsigned int variable_supply;
+    struct variable_supply_bits
+    {
+        unsigned type:2;
+        unsigned max_volt:10;
+        unsigned min_volt:10;
+        unsigned max_cur:10;
+        
+    }obj_var_sply;
+    
+};
+
+union libtypec_battery_supply_src
+{
+    unsigned int battery_supply;
+    struct battery_supply_bits
+    {
+        unsigned type:2;
+        unsigned max_volt:10;
+        unsigned min_volt:10;
+        unsigned max_pwr:10;
+    }obj_bat_sply;
+    
+};
+
+union libtypec_pps_src
+{
+    unsigned int spr_pps_supply;
+    struct pps_supply_bits
+    {
+        unsigned type:2;
+        unsigned pps_type:2;
+        unsigned pwr_ltd:1;
+        unsigned rsvd1:2;
+        unsigned max_volt:8;
+        unsigned rsvd2:1;
+        unsigned min_volt:8;
+        unsigned rsvd3:1;
+        unsigned max_cur:7;
+    }obj_pps_sply;
+    
+};
+
+union libtypec_fixed_supply_snk
+{
+    unsigned int fixed_supply;
+    struct fixed_sply_bits
+    {
+        unsigned type:2;
+        unsigned drp:1;
+        unsigned higher_caps:1;
+        unsigned uncons_pwr:1;
+        unsigned usb_comm_cap:1;
+        unsigned drd:1;
+        unsigned fr_swp:2;
+        unsigned rsvd:3;
+        unsigned volt:10;
+        unsigned opr_cur:10;
+    }obj_fixed_supply;
+    
+};
+
+union libtypec_variable_sply_sink
+{
+    unsigned int var_sply_snk;
+    struct var_supply_bits
+    {
+        unsigned type:2;
+        unsigned max_volt:10;
+        unsigned min_volt:10;
+        unsigned opr_cur:10;
+    }obj_var_sply;
+    
+};
+
+union libtypec_battery_sply_sink
+{
+    unsigned int battery_supply;
+    struct battery_sply_bits
+    {
+        unsigned type:2;
+        unsigned max_volt:10;
+        unsigned min_volt:10;
+        unsigned opr_pwr:10;
+    }obj_bat_sply;
+    
+};
+
+union libtypec_pps_sink
+{
+    unsigned int spr_pps;
+    struct spr_pps_bits
+    {
+        unsigned type:2;
+        unsigned pps_type:2;
+        unsigned rsvd1:3;
+        unsigned max_volt:8;
+        unsigned rsvd2:1;
+        unsigned min_volt:8;
+        unsigned rsvd3:1;
+        unsigned max_cur:7;
+    }obj_spr_pps;
+    
+};
+
+
 #define LIBTYPEC_MAJOR_VERSION 0
 #define LIBTYPEC_MINOR_VERSION 2
 
@@ -163,7 +292,7 @@ int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_dat
 int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data);
 int libtypec_get_cam_supported(int conn_num, char *cam_data);
 int libtypec_get_current_cam(char *cur_cam_data);
-int libtypec_get_pdos(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, char *pdo_data);
+int libtypec_get_pdos(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data);
 int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *cbl_prop_data);
 int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status *conn_sts);
 int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
