@@ -168,7 +168,7 @@ int libtypec_exit(void)
 /**
  * This function shall be used to get the platform policy capabilities
  *
- * \param  cap_data Data structure to hold platform capabilty
+ * \param  cap_data Data structure to hold platform capability
  *
  * \returns 0 on success
  */
@@ -183,9 +183,9 @@ int libtypec_get_capability(struct libtypec_capabiliy_data *cap_data)
 /**
  * This function shall be used to get the capabilities of a connector
  *
- * \param  conn_num Indicates which connector's capability needs to be retrived
+ * \param  conn_num Indicates which connector's capability needs to be retrieved
  *
- * \param  conn_cap_data Data structure to hold connector capabilty
+ * \param  conn_cap_data Data structure to hold connector capability
  *
  * \returns 0 on success
  */
@@ -204,7 +204,7 @@ int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_dat
  * \param  recipient Represents alternate mode to be retrieved from local
  * or SOP or SOP' or SOP"
  *
- * \param  conn_num Indicates which connector's capability needs to be retrived
+ * \param  conn_num Indicates which connector's capability needs to be retrivied
  *
  * \returns number of alternate modes on success
  */
@@ -218,7 +218,7 @@ int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_dat
 /**
  * This function shall be used to get the Cable Property of a connector
  *
- * \param  conn_num Indicates which connector's status needs to be retrived
+ * \param  conn_num Indicates which connector's status needs to be retrieved
  *
  * \returns 0 on success
  */
@@ -233,7 +233,7 @@ int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *
 /**
  * This function shall be used to get the Connector status
  *
- * \param  conn_num Indicates which connector's status needs to be retrived
+ * \param  conn_num Indicates which connector's status needs to be retrieved
  *
  * \returns 0 on success
  */
@@ -251,7 +251,7 @@ int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status
  * \param  recipient Represents PD response message to be retrieved from local
  * or SOP or SOP' or SOP"
  *
- * \param  conn_num Indicates which connector's PD message needs to be retrived
+ * \param  conn_num Indicates which connector's PD message needs to be retrieved
  *
  * \param pd_msg_resp
  * \returns 0 on success

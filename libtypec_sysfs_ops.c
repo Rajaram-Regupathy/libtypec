@@ -636,7 +636,7 @@ static int libtypec_sysfs_get_cable_properties_ops(int conn_num, struct libtypec
 
 	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable", conn_num);
 
-	/* No cable indentified or connector number is incorrect */
+	/* No cable identified or connector number is incorrect */
 	if (lstat(path_str, &sb) == -1)
 		return -1;
 

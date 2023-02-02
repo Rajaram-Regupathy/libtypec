@@ -40,10 +40,10 @@ struct libtypec_capabiliy_data
 {
     unsigned int bmAttributes;
     unsigned bNumConnectors : 7;
-    unsigned reserved : 1;
+    unsigned reserved1 : 1;
     unsigned bmOptionalFeatures : 24;
     unsigned bNumAltModes : 8;
-    unsigned reserverd : 8;
+    unsigned reserved2 : 8;
     unsigned bcdBCVersion : 16;
     unsigned bcdPDVersion : 16;
     unsigned bcdTypeCVersion : 16;
