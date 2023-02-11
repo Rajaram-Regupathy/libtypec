@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
     cable_prop.plug_end_type = PLUG_TYPE_OTH;
 
     // Connector Capabilities
-    printf("\nConnector %d Capablity/Status\n", i);
+    printf("\nConnector %d Capability/Status\n", i);
     libtypec_get_conn_capability(i, &conn_data);
     print_conn_capability(conn_data);
 

@@ -445,7 +445,7 @@ const struct vdo_field pd3p0_active_cable_vdo1_fields[] = {
   {"Cable Termination Type", 1, 11, 0x3},
   {"Cable Latency", 1, 13, 0xf},
   {"Reserved", 0, 17, 0x1},
-  {"Conector Type", 1, 18, 0x3},
+  {"Connector Type", 1, 18, 0x3},
   {"Reserved", 0, 20, 0x1},
   {"VDO version", 1, 21, 0x7},
   {"Firmware Version", 1, 24, 0xf},
@@ -482,8 +482,8 @@ const struct vdo_field pd3p0_active_cable_vdo2_fields[] = {
   {"U3 to U0 transition mode", 1, 11, 0x1},
   {"U3/Cld Power", 1, 12, 0x7},
   {"Reserved", 0, 15, 0x1},
-  {"Shutdown Tempurature", 1, 16, 0xff},
-  {"Maximum Operating Tempurature", 1, 24, 0xff},
+  {"Shutdown Temperature", 1, 16, 0xff},
+  {"Maximum Operating Temperature", 1, 24, 0xff},
 };
 const char *pd3p0_active_cable_vdo2_field_desc[][MAX_FIELDS] = {
   {"Gen 1", "Gen 2 or higher"},
@@ -743,8 +743,8 @@ const struct vdo_field pd3p1_active_cable_vdo2_fields[] = {
   {"U3 to U0 transition mode", 1, 11, 0x1},
   {"U3/Cld Power", 1, 12, 0x7},
   {"Reserved", 0, 15, 0x1},
-  {"Shutdown Tempurature", 1, 16, 0xff},
-  {"Maximum Operating Tempurature", 1, 24, 0xff},
+  {"Shutdown Temperature", 1, 16, 0xff},
+  {"Maximum Operating Temperature", 1, 24, 0xff},
 };
 const char *pd3p1_active_cable_vdo2_field_desc[][MAX_FIELDS] = {
   {"Gen 1", "Gen 2 or higher"},
@@ -840,7 +840,7 @@ const struct vdo_field dp_alt_mode_partner_fields[] = {
   {"Signaling for Transport of DisplaPort Protocol", 1, 2, 0xf},
   {"Receptacle Indication", 1, 6, 0x1},
   {"USB 2.0 Signaling Not Used", 1, 7, 0x1},
-  {"DP Source Device Pin Suported", 1, 8, 0xff},
+  {"DP Source Device Pin Supported", 1, 8, 0xff},
   {"DP Sink Device Pin Supported", 1, 16, 0xff},
   {"Reserved", 0, 24, 0xff},
 };
