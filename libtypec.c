@@ -94,24 +94,33 @@ char *get_kernel_verion(void)
     else
         return ker_uname.release;
 }
+
 char *get_os_name(void)
 {
     FILE *fp = fopen("/etc/os-release", "r");
-    char buf[128], *p = NULL;
+    static char buf[128];
+    char *p = NULL;
+
     if (fp)
     {
-        while (fgets(buf, 128, fp))
+	while (fgets(buf, sizeof(buf), fp))
         {
-            p = strstr(buf, "ID=");
+            char *ptr;
 
-            if (p)
-            {
-                p = strchr(buf, '=') + 1;
-                p[strlen(p) - 1] = '\0';
+            /* Ensure buffer always has eos marker at end */
+            buf[sizeof(buf) - 1] = '\0';
+            /* Remove \n */
+            for (ptr = buf; *ptr && *ptr != '\n'; ptr++)
+                    ;
+            *ptr = '\0';
+
+            if (strncmp(buf, "ID=", 3) == 0) {
+                p = buf + 3;
                 break;
             }
         }
     }
+    fclose(fp);
 
     return p;
 }
