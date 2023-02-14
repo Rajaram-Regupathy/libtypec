@@ -246,29 +246,29 @@ static int get_cable_mode_support(char *path)
 }
 static unsigned int get_variable_supply_pdo(char *path, int src_snk)
 {
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[1024];
 	union libtypec_variable_supply_src var_src;
 	unsigned int tmp;
 
 	var_src.obj_var_sply.type = 1;
 	
-	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_voltage");
 	tmp = get_dword_from_path(port_content);
 	var_src.obj_var_sply.max_volt = tmp/50;
 
-	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "minimum_voltage");
 	tmp = get_dword_from_path(port_content);
 	var_src.obj_var_sply.min_volt = tmp/50;
 
 	if(src_snk)
 	{
-		sprintf(port_content, "%s/%s", path, "maximum_current");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_current");
 		tmp = get_dword_from_path(port_content);
 		var_src.obj_var_sply.max_cur = tmp/10;
 	}
 	else
 	{
-		sprintf(port_content, "%s/%s", path, "operational_current");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "operational_current");
 		tmp = get_dword_from_path(port_content);
 		var_src.obj_var_sply.max_cur = tmp/10;		
 	}
@@ -277,29 +277,29 @@ static unsigned int get_variable_supply_pdo(char *path, int src_snk)
 }
 static unsigned int get_battery_supply_pdo(char *path, int src_snk)
 {
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 512];
 	union libtypec_battery_supply_src bat_src;
 	unsigned int tmp;
 
 	bat_src.obj_bat_sply.type = 2;
 
-	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_voltage");
 	tmp = get_dword_from_path(port_content);
 	bat_src.obj_bat_sply.max_volt = tmp/50;
 
-	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "minimum_voltage");
 	tmp = get_dword_from_path(port_content);
 	bat_src.obj_bat_sply.min_volt = tmp/50;
 	
 	if(src_snk)
 	{
-		sprintf(port_content, "%s/%s", path, "maximum_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_power");
 		tmp = get_dword_from_path(port_content);
 		bat_src.obj_bat_sply.max_pwr = tmp/250;
 	}
 	else
 	{
-		sprintf(port_content, "%s/%s", path, "operational_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "operational_power");
 		tmp = get_dword_from_path(port_content);
 		bat_src.obj_bat_sply.max_pwr = tmp/250;
 
@@ -310,26 +310,26 @@ static unsigned int get_battery_supply_pdo(char *path, int src_snk)
 }
 static unsigned int get_programmable_supply_pdo(char *path, int src_snk)
 {
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 512];
 	union libtypec_pps_src pps_src={0};
 	unsigned int tmp;
 
 	pps_src.obj_pps_sply.type = 3;
 	if(src_snk)
 	{
-		sprintf(port_content, "%s/%s", path, "pps_power_limited");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "pps_power_limited");
 		pps_src.obj_pps_sply.pwr_ltd = get_dword_from_path(port_content);
 	}
 
-	sprintf(port_content, "%s/%s", path, "maximum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_voltage");
 	tmp = get_dword_from_path(port_content);
 	pps_src.obj_pps_sply.max_volt = tmp/100;
 
-	sprintf(port_content, "%s/%s", path, "minimum_voltage");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "minimum_voltage");
 	tmp = get_dword_from_path(port_content);
 	pps_src.obj_pps_sply.min_volt = tmp/100;
 
-	sprintf(port_content, "%s/%s", path, "maximum_current");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_current");
 	tmp = get_dword_from_path(port_content);
 	pps_src.obj_pps_sply.max_cur = tmp/50;
 
@@ -339,7 +339,7 @@ static unsigned int get_programmable_supply_pdo(char *path, int src_snk)
 }
 static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 {
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 512];
 	union libtypec_fixed_supply_src fxd_src;
 	union libtypec_fixed_supply_snk fxd_snk;
 	
@@ -349,33 +349,33 @@ static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 	{
 		fxd_src.obj_fixed_sply.type = 0;
 		
-		sprintf(port_content, "%s/%s", path, "dual_role_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "dual_role_power");
 		fxd_src.obj_fixed_sply.dual_pwr = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "usb_suspend_supported");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "usb_suspend_supported");
 		fxd_src.obj_fixed_sply.usb_suspend = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "unconstrained_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "unconstrained_power");
 		fxd_src.obj_fixed_sply.uncons_pwr = get_dword_from_path(path);
 		
-		sprintf(port_content, "%s/%s", path, "usb_communication_capable");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "usb_communication_capable");
 		fxd_src.obj_fixed_sply.usb_comm = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "dual_role_data");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "dual_role_data");
 		fxd_src.obj_fixed_sply.drd = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "unchunked_extended_messages_supported");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "unchunked_extended_messages_supported");
 		fxd_src.obj_fixed_sply.unchunked = get_dword_from_path(port_content);
 		
 		fxd_src.obj_fixed_sply.epr = 0;
 		
 		fxd_src.obj_fixed_sply.peak_cur = 0;
 		
-		sprintf(port_content, "%s/%s", path, "voltage");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "voltage");
 		tmp = get_dword_from_path(port_content);
 		fxd_src.obj_fixed_sply.volt = tmp/50;
 		
-		sprintf(port_content, "%s/%s", path, "maximum_current");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "maximum_current");
 		tmp = get_dword_from_path(port_content);
 		fxd_src.obj_fixed_sply.max_cur = tmp/10;
 
@@ -385,26 +385,26 @@ static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 	{
 		fxd_snk.obj_fixed_supply.type = 0;
 		
-		sprintf(port_content, "%s/%s", path, "dual_role_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "dual_role_power");
 		fxd_snk.obj_fixed_supply.drp = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "unconstrained_power");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "unconstrained_power");
 		fxd_snk.obj_fixed_supply.uncons_pwr = get_dword_from_path(path);
 		
-		sprintf(port_content, "%s/%s", path, "usb_communication_capable");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "usb_communication_capable");
 		fxd_snk.obj_fixed_supply.usb_comm_cap = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "dual_role_data");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "dual_role_data");
 		fxd_snk.obj_fixed_supply.drd = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "fast_role_swap_current");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "fast_role_swap_current");
 		fxd_snk.obj_fixed_supply.fr_swp = get_dword_from_path(port_content);
 		
-		sprintf(port_content, "%s/%s", path, "voltage");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "voltage");
 		tmp = get_dword_from_path(port_content);
 		fxd_snk.obj_fixed_supply.volt = tmp/50;
 		
-		sprintf(port_content, "%s/%s", path, "operational_current");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path, "operational_current");
 		tmp = get_dword_from_path(port_content);
 		fxd_snk.obj_fixed_supply.opr_cur = tmp/10;
 
@@ -429,7 +429,7 @@ static int libtypec_sysfs_get_capability_ops(struct libtypec_capabiliy_data *cap
 	DIR *typec_path = opendir(SYSFS_TYPEC_PATH), *port_path;
 	struct dirent *typec_entry, *port_entry;
 	int num_ports = 0, num_alt_mode = 0;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 
 	if (!typec_path)
 	{
@@ -444,7 +444,7 @@ static int libtypec_sysfs_get_capability_ops(struct libtypec_capabiliy_data *cap
 		{
 			num_ports++;
 
-			sprintf(path_str, SYSFS_TYPEC_PATH "/%s", typec_entry->d_name);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/%s", typec_entry->d_name);
 
 			/*Scan the port capability*/
 			port_path = opendir(path_str);
@@ -458,13 +458,13 @@ static int libtypec_sysfs_get_capability_ops(struct libtypec_capabiliy_data *cap
 				}
 			}
 
-			sprintf(port_content, "%s/%s", path_str, "usb_power_delivery_revision");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "usb_power_delivery_revision");
 
 			cap_data->bcdPDVersion = get_bcd_from_rev_file(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			sprintf(port_content, "%s/%s", path_str, "usb_typec_revision");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "usb_typec_revision");
 
 			cap_data->bcdTypeCVersion = get_bcd_from_rev_file(port_content);
 
@@ -483,9 +483,9 @@ static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_
 {
 	struct stat sb;
 	struct dirent *port_entry;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -493,7 +493,7 @@ static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_
 		return -1;
 	}
 
-	sprintf(port_content, "%s/%s", path_str, "power_role");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "power_role");
 
 	conn_cap_data->opr_mode = get_opr_mode(port_content);
 
@@ -509,11 +509,11 @@ static int libtypec_sysfs_get_conn_capability_ops(int conn_num, struct libtypec_
 
 	if (get_os_type() == OS_TYPE_CHROME)
 	{
-		sprintf(port_content, "%s/port%d-partner/%s", path_str, conn_num, "usb_power_delivery_revision");
+		snprintf(port_content, sizeof(port_content), "%s/port%d-partner/%s", path_str, conn_num, "usb_power_delivery_revision");
 
 		conn_cap_data->partner_rev = get_pd_rev(port_content);
 
-		sprintf(port_content, "%s/port%d-cable/%s", path_str, conn_num, "usb_power_delivery_revision");
+		snprintf(port_content, sizeof(port_content), "%s/port%d-cable/%s", path_str, conn_num, "usb_power_delivery_revision");
 
 		conn_cap_data->cable_rev = get_pd_rev(port_content);
 	}
@@ -524,9 +524,9 @@ static int libtypec_sysfs_get_alternate_modes(int recipient, int conn_num, struc
 {
 	struct stat sb;
 	int num_alt_mode = 0;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -540,24 +540,24 @@ static int libtypec_sysfs_get_alternate_modes(int recipient, int conn_num, struc
 		do
 		{
 
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d.%d", conn_num, conn_num, num_alt_mode);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d/port%d.%d", conn_num, conn_num, num_alt_mode);
 
 			if (lstat(path_str, &sb) == -1)
 				break;
 
-			sprintf(port_content, "%s/%s", path_str, "svid");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "svid");
 
 			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			sprintf(port_content, "%s/%s", path_str, "vdo");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "vdo");
 
 			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			memset(path_str, 0, 512);
+			memset(path_str, 0, sizeof(path_str));
 
 			num_alt_mode++;
 
@@ -569,24 +569,24 @@ static int libtypec_sysfs_get_alternate_modes(int recipient, int conn_num, struc
 		do
 		{
 
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner/port%d-partner.%d", conn_num, conn_num, conn_num, num_alt_mode);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d/port%d-partner/port%d-partner.%d", conn_num, conn_num, conn_num, num_alt_mode);
 
 			if (lstat(path_str, &sb) == -1)
 				break;
 
-			sprintf(port_content, "%s/%s", path_str, "svid");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "svid");
 
 			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			sprintf(port_content, "%s/%s", path_str, "vdo");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "vdo");
 
 			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			memset(path_str, 0, 512);
+			memset(path_str, 0, sizeof(path_str));
 
 			num_alt_mode++;
 
@@ -598,24 +598,24 @@ static int libtypec_sysfs_get_alternate_modes(int recipient, int conn_num, struc
 		do
 		{
 
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/port%d-plug0/port%d-plug0.%d", conn_num, conn_num, conn_num, num_alt_mode);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-cable/port%d-plug0/port%d-plug0.%d", conn_num, conn_num, conn_num, num_alt_mode);
 
 			if (lstat(path_str, &sb) == -1)
 				break;
 
-			sprintf(port_content, "%s/%s", path_str, "svid");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "svid");
 
 			alt_mode_data[num_alt_mode].svid = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			sprintf(port_content, "%s/%s", path_str, "vdo");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "vdo");
 
 			alt_mode_data[num_alt_mode].vdo = get_hex_dword_from_path(port_content);
 
-			memset(port_content, 0, 512);
+			memset(port_content, 0, sizeof(port_content));
 
-			memset(path_str, 0, 512);
+			memset(path_str, 0, sizeof(path_str));
 
 			num_alt_mode++;
 
@@ -632,27 +632,27 @@ static int libtypec_sysfs_get_cable_properties_ops(int conn_num, struct libtypec
 {
 	struct stat sb;
 	struct dirent *port_entry;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-cable", conn_num);
 
 	/* No cable identified or connector number is incorrect */
 	if (lstat(path_str, &sb) == -1)
 		return -1;
 
-	sprintf(port_content, "%s/%s", path_str, "plug_type");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "plug_type");
 
 	cbl_prop_data->plug_end_type = get_cable_plug_type(port_content);
 
-	memset(port_content, 0, 512);
+	memset(port_content, 0, sizeof(port_content));
 
-	sprintf(port_content, "%s/%s", path_str, "type");
+	snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "type");
 
 	cbl_prop_data->cable_type = get_cable_type(port_content);
 
-	memset(port_content, 0, 512);
+	memset(port_content, 0, sizeof(port_content));
 
-	sprintf(port_content, SYSFS_TYPEC_PATH "/port%d-plug0/%s", conn_num, "number_of_alternate_modes");
+	snprintf(port_content, sizeof(port_content), SYSFS_TYPEC_PATH "/port%d-plug0/%s", conn_num, "number_of_alternate_modes");
 
 	cbl_prop_data->mode_support = get_cable_mode_support(port_content);
 
@@ -663,10 +663,10 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 {
 	struct stat sb;
 	struct dirent *port_entry;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 	int ret;
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -674,11 +674,11 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 		return -1;
 	}
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/port%d-partner", conn_num, conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d/port%d-partner", conn_num, conn_num);
 
 	conn_sts->connect_sts = (lstat(path_str, &sb) == -1) ? 0 : 1;
 
-	sprintf(path_str, SYSFS_PSY_PATH "/ucsi-source-psy-USBC000:00%d", conn_num + 1);
+	snprintf(path_str, sizeof(path_str), SYSFS_PSY_PATH "/ucsi-source-psy-USBC000:00%d", conn_num + 1);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -687,7 +687,7 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 	}
 	else
 	{
-		sprintf(port_content, "%s/%s", path_str, "online");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "online");
 
 		ret = get_hex_dword_from_path(port_content);
 
@@ -695,21 +695,21 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 		{
 			unsigned long cur, volt, op_mw, max_mw;
 
-			sprintf(port_content, "%s/%s", path_str, "current_now");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "current_now");
 
 			cur = get_dword_from_path(port_content) / 1000;
 
-			sprintf(port_content, "%s/%s", path_str, "voltage_now");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "voltage_now");
 
 			volt = get_dword_from_path(port_content) / 1000;
 
 			op_mw = (cur * volt) / (250 * 1000);
 
-			sprintf(port_content, "%s/%s", path_str, "current_max");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "current_max");
 
 			cur = get_dword_from_path(port_content) / 1000;
 
-			sprintf(port_content, "%s/%s", path_str, "voltage_max");
+			snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "voltage_max");
 
 			volt = get_dword_from_path(port_content) / 1000;
 
@@ -724,10 +724,10 @@ static int libtypec_sysfs_get_connector_status_ops(int conn_num, struct libtypec
 static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_num, char *pd_resp_data)
 {
 	struct stat sb;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 64];
 	union libtypec_discovered_identity *id = (void *)pd_resp_data;
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -738,84 +738,84 @@ static int libtypec_sysfs_get_discovered_identity_ops(int recipient, int conn_nu
 	if (recipient == AM_SOP)
 	{
 
-		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/identity", conn_num);
+		snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-partner/identity", conn_num);
 
 		if (lstat(path_str, &sb) == -1)
 			return -1;
 
-		sprintf(port_content, "%s/%s", path_str, "cert_stat");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "cert_stat");
 
 		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "id_header");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "id_header");
 
 		id->disc_id.id_header = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product");
 
 		id->disc_id.product = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo1");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo1");
 
 		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo2");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo2");
 
 		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo3");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo3");
 
 		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
 	}
 	else if (recipient == AM_SOP_PR)
 	{
 
-		sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-cable/identity", conn_num);
+		snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-cable/identity", conn_num);
 
 		if (lstat(path_str, &sb) == -1)
 			return -1;
 
-		sprintf(port_content, "%s/%s", path_str, "cert_stat");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "cert_stat");
 
 		id->disc_id.cert_stat = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "id_header");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "id_header");
 
 		id->disc_id.id_header = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product");
 
 		id->disc_id.product = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo1");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo1");
 
 		id->disc_id.product_type_vdo1 = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo2");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo2");
 
 		id->disc_id.product_type_vdo2 = get_hex_dword_from_path(port_content);
 
-		memset(port_content, 0, 512);
+		memset(port_content, 0, sizeof(port_content));
 
-		sprintf(port_content, "%s/%s", path_str, "product_type_vdo3");
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str, "product_type_vdo3");
 
 		id->disc_id.product_type_vdo3 = get_hex_dword_from_path(port_content);
 	}
@@ -836,11 +836,11 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 {
 	struct stat sb;
 	int num_pdos_read = 0;
-	char path_str[512], port_content[512];
+	char path_str[512], port_content[512 + 256];
 	DIR *typec_path , *port_path;
 	struct dirent *typec_entry, *port_entry;
 
-	sprintf(path_str, SYSFS_TYPEC_PATH "/port%d", conn_num);
+	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
 	if (lstat(path_str, &sb) == -1)
 	{
@@ -851,16 +851,16 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 	if (partner == 0)
 	{
 		if(src_snk)
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/source-capabilities", conn_num);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/source-capabilities", conn_num);
 		else
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/sink-capabilities", conn_num);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d/usb_power_delivery/sink-capabilities", conn_num);
 	}
 	else
 	{
 		if(src_snk)
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/source-capabilities", conn_num);
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/source-capabilities", conn_num);
 		else
-			sprintf(path_str, SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/sink-capabilities", conn_num);		
+			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/sink-capabilities", conn_num);		
 	}
 	if (lstat(path_str, &sb) == -1)
 		return -1;
@@ -869,8 +869,8 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 
 	while ((typec_entry = readdir(typec_path)))
 	{
-		memset(port_content,0,512);
-		sprintf(port_content, "%s/%s", path_str,typec_entry->d_name);
+		memset(port_content, 0, sizeof(port_content));
+		snprintf(port_content, sizeof(port_content), "%s/%s", path_str,typec_entry->d_name);
 
 		if(strstr(typec_entry->d_name, "fixed"))
 		{
