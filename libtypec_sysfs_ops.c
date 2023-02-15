@@ -69,8 +69,8 @@ static unsigned long get_hex_dword_from_path(char *path)
 
 	if (fp)
 	{
-		fgets(buf, 64, fp);
-
+		if(fgets(buf, 64, fp) == NULL)
+			return -1;
 		dword = strtol(buf, NULL, 16);
 
 		fclose(fp);
@@ -87,8 +87,8 @@ static unsigned long get_dword_from_path(char *path)
 
 	if (fp)
 	{
-		fgets(buf, 64, fp);
-
+		if(fgets(buf, 64, fp) == NULL)
+			return -1;
 		dword = strtoul(buf, NULL, 10);
 
 		fclose(fp);
@@ -104,9 +104,13 @@ unsigned char get_opr_mode(char *path)
 	short ret = OPR_MODE_RD_ONLY; /*Rd sink*/
 
 	FILE *fp = fopen(path, "r");
+	
+	if (fp == NULL)
+		return -1;
 
-	fgets(buf, 64, fp);
-
+	if(fgets(buf, 64, fp) == NULL)
+		return -1;
+	
 	pEnd = strstr(buf, "source");
 
 	if (pEnd != NULL)
@@ -134,8 +138,8 @@ static short get_bcd_from_rev_file(char *path)
 
 	if (fp)
 	{
-		fgets(buf, 10, fp);
-
+		if(fgets(buf, 10, fp) == NULL)
+			return -1;
 		bcd = ((buf[0] - '0') << 8) | (buf[2] - '0');
 
 		fclose(fp);
@@ -152,8 +156,8 @@ static char get_pd_rev(char *path)
 
 	if (fp)
 	{
-		fgets(buf, 10, fp);
-
+		if(fgets(buf, 10, fp) == NULL)
+			return -1;
 		rev = ((buf[0] - '0') << 4) | (buf[2] - '0');
 
 		fclose(fp);
@@ -169,8 +173,12 @@ static int get_cable_plug_type(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 64, fp);
-
+	if (fp == NULL)
+		return -1;
+		
+	if(fgets(buf, 64, fp) == NULL)
+		return -1;
+	
 	pEnd = strstr(buf, "type-c");
 
 	if (pEnd == NULL)
@@ -210,8 +218,12 @@ static int get_cable_type(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 64, fp);
+	if (fp == NULL)
+		return -1;
 
+	if(fgets(buf, 64, fp) == NULL)
+		return -1;
+	
 	pEnd = strstr(buf, "passive");
 
 	if (pEnd == NULL)
@@ -236,8 +248,12 @@ static int get_cable_mode_support(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	fgets(buf, 64, fp);
+	if (fp == NULL)
+		return -1;
 
+	if(fgets(buf, 64, fp) == NULL)
+		return -1;
+	
 	ret = (buf[0] - '0') ? 1 : 0;
 
 	fclose(fp);
