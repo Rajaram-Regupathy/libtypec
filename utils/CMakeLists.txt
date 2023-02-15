@@ -12,6 +12,7 @@ target_link_libraries(lstypec "${CMAKE_CURRENT_LIST_DIR}/../bin/liblibtypec.a" u
 target_link_libraries(typecstatus "${CMAKE_CURRENT_LIST_DIR}/../bin/liblibtypec.a" udev)
 
 
+set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2")
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
