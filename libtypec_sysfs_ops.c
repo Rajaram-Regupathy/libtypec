@@ -58,6 +58,7 @@ static int get_os_type(void)
 				return OS_TYPE_CHROME;
 			}
 		}
+		fclose(fp);
 	}
 
 	return 0;
