@@ -69,7 +69,9 @@ static unsigned long get_hex_dword_from_path(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	if (fp)
+	if (fp == NULL)
+                return -1;
+        else
 	{
 		if (fgets(buf, 64, fp) == NULL)
                 {
