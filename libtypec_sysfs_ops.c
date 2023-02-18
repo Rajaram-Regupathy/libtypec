@@ -45,6 +45,7 @@ static int get_os_type(void)
 {
 	FILE *fp = fopen("/etc/os-release", "r");
 	char buf[128], *p = NULL;
+
 	if (fp)
 	{
 		while (fgets(buf, 128, fp))
@@ -53,9 +54,11 @@ static int get_os_type(void)
 
 			if (p)
 			{
+				fclose(fp);
 				return OS_TYPE_CHROME;
 			}
 		}
+		fclose(fp);
 	}
 
 	return 0;
@@ -67,10 +70,15 @@ static unsigned long get_hex_dword_from_path(char *path)
 
 	FILE *fp = fopen(path, "r");
 
-	if (fp)
+	if (fp == NULL)
+                return -1;
+        else
 	{
-		if(fgets(buf, 64, fp) == NULL)
+		if (fgets(buf, 64, fp) == NULL)
+                {
+		        fclose(fp);
 			return -1;
+                }
 		dword = strtol(buf, NULL, 16);
 
 		fclose(fp);
@@ -87,8 +95,11 @@ static unsigned long get_dword_from_path(char *path)
 
 	if (fp)
 	{
-		if(fgets(buf, 64, fp) == NULL)
+		if (fgets(buf, 64, fp) == NULL)
+                {
+		        fclose(fp);
 			return -1;
+                }
 		dword = strtoul(buf, NULL, 10);
 
 		fclose(fp);
@@ -108,8 +119,11 @@ unsigned char get_opr_mode(char *path)
 	if (fp == NULL)
 		return -1;
 
-	if(fgets(buf, 64, fp) == NULL)
+	if (fgets(buf, 64, fp) == NULL)
+        {
+		fclose(fp);
 		return -1;
+        }
 	
 	pEnd = strstr(buf, "source");
 
@@ -138,8 +152,11 @@ static short get_bcd_from_rev_file(char *path)
 
 	if (fp)
 	{
-		if(fgets(buf, 10, fp) == NULL)
+		if (fgets(buf, 10, fp) == NULL)
+                {
+		        fclose(fp);
 			return -1;
+                }
 		bcd = ((buf[0] - '0') << 8) | (buf[2] - '0');
 
 		fclose(fp);
@@ -156,8 +173,11 @@ static char get_pd_rev(char *path)
 
 	if (fp)
 	{
-		if(fgets(buf, 10, fp) == NULL)
+		if (fgets(buf, 10, fp) == NULL)
+                {
+		        fclose(fp);
 			return -1;
+                }
 		rev = ((buf[0] - '0') << 4) | (buf[2] - '0');
 
 		fclose(fp);
@@ -176,8 +196,11 @@ static int get_cable_plug_type(char *path)
 	if (fp == NULL)
 		return -1;
 		
-	if(fgets(buf, 64, fp) == NULL)
+	if (fgets(buf, 64, fp) == NULL)
+        {
+		fclose(fp);
 		return -1;
+        }
 	
 	pEnd = strstr(buf, "type-c");
 
@@ -221,8 +244,11 @@ static int get_cable_type(char *path)
 	if (fp == NULL)
 		return -1;
 
-	if(fgets(buf, 64, fp) == NULL)
+	if (fgets(buf, 64, fp) == NULL)
+        {
+		fclose(fp);
 		return -1;
+        }
 	
 	pEnd = strstr(buf, "passive");
 
@@ -251,8 +277,11 @@ static int get_cable_mode_support(char *path)
 	if (fp == NULL)
 		return -1;
 
-	if(fgets(buf, 64, fp) == NULL)
+	if (fgets(buf, 64, fp) == NULL)
+        {
+		fclose(fp);
 		return -1;
+        }
 	
 	ret = (buf[0] - '0') ? 1 : 0;
 
@@ -882,6 +911,8 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 		return -1;
 
 	typec_path = opendir(path_str);
+        if (typec_path == NULL)
+                return -1;
 
 	while ((typec_entry = readdir(typec_path)))
 	{
@@ -911,6 +942,8 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 		
 		
 	}
+
+        closedir(typec_path);
 	
 	num_pdo = num_pdos_read;
 

@@ -119,8 +119,8 @@ char *get_os_name(void)
                 break;
             }
         }
+        fclose(fp);
     }
-    fclose(fp);
 
     return p;
 }
