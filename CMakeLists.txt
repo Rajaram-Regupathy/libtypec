@@ -7,6 +7,7 @@ enable_testing()
 add_library(libtypec libtypec.c libtypec_sysfs_ops.c)
 
 set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2")
+set_target_properties(libtypec PROPERTIES OUTPUT_NAME "typec")
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})

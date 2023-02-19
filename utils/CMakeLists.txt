@@ -8,8 +8,8 @@ get_filename_component(libtypec_PROJECT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." A
 add_executable(lstypec lstypec.c names.c)
 add_executable(typecstatus typecstatus.c names.c)
 
-target_link_libraries(lstypec "${CMAKE_CURRENT_LIST_DIR}/../bin/liblibtypec.a" udev)
-target_link_libraries(typecstatus "${CMAKE_CURRENT_LIST_DIR}/../bin/liblibtypec.a" udev)
+target_link_libraries(lstypec "${CMAKE_CURRENT_LIST_DIR}/../bin/libtypec.a" udev)
+target_link_libraries(typecstatus "${CMAKE_CURRENT_LIST_DIR}/../bin/libtypec.a" udev)
 
 
 set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2")
