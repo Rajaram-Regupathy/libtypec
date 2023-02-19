@@ -60,7 +60,7 @@ struct libtypec_os_backend
 
     int (*get_current_cam_ops)(char *cur_cam_data);
 
-    int (*get_pdos_ops)(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data);
+    int (*get_pdos_ops)(int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data);
 
     int (*get_cable_properties_ops)(int conn_num, struct libtypec_cable_property *cbl_prop_data);
 

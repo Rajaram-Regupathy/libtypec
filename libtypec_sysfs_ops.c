@@ -877,7 +877,7 @@ static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int nu
 	return 0;
 }
 
-static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data)
+static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data)
 {
 	struct stat sb;
 	int num_pdos_read = 0;
@@ -945,7 +945,7 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 
         closedir(typec_path);
 	
-	num_pdo = num_pdos_read;
+	*num_pdo = num_pdos_read;
 
 	return num_pdos_read;
 

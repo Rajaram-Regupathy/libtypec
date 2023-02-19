@@ -292,7 +292,7 @@ int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_dat
 int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data);
 int libtypec_get_cam_supported(int conn_num, char *cam_data);
 int libtypec_get_current_cam(char *cur_cam_data);
-int libtypec_get_pdos(int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data);
+int libtypec_get_pdos(int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data);
 int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *cbl_prop_data);
 int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status *conn_sts);
 int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);

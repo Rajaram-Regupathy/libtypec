@@ -293,7 +293,7 @@ int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp
  * 
  * \returns PDO retrieved on success
  */
-int libtypec_get_pdos (int conn_num, int partner, int offset, int num_pdo, int src_snk, int type, unsigned int *pdo_data)
+int libtypec_get_pdos (int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data)
 {
      if (!cur_libtypec_os_backend)
         return -EIO;
