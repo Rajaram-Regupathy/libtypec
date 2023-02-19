@@ -907,12 +907,12 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 		else
 			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/sink-capabilities", conn_num);		
 	}
-	if (lstat(path_str, &sb) == -1)
-		return -1;
+
 
 	typec_path = opendir(path_str);
-        if (typec_path == NULL)
-                return -1;
+        
+        	if (typec_path == NULL)
+                		return -1;
 
 	while ((typec_entry = readdir(typec_path)))
 	{
