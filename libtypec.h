@@ -119,18 +119,18 @@ union libtypec_fixed_supply_src
     unsigned fixed_supply;
     struct fixed_supply_bits
     {
-        unsigned type:2;
-        unsigned dual_pwr:1;
-        unsigned usb_suspend:1;
-        unsigned uncons_pwr:1;
-        unsigned usb_comm:1;
-        unsigned drd:1;
-        unsigned unchunked:1;
-        unsigned epr:1;
-        unsigned rsvd:1;
-        unsigned peak_cur:2;
-        unsigned volt:10;
         unsigned max_cur:10;
+        unsigned volt:10;
+        unsigned peak_cur:2;
+        unsigned rsvd:1;
+        unsigned epr:1;
+        unsigned unchunked:1;
+        unsigned drd:1;
+        unsigned usb_comm:1;
+        unsigned uncons_pwr:1;
+        unsigned usb_suspend:1;
+        unsigned dual_pwr:1;
+        unsigned type:2;
     }obj_fixed_sply;
     
 };
@@ -140,10 +140,10 @@ union libtypec_variable_supply_src
     unsigned int variable_supply;
     struct variable_supply_bits
     {
-        unsigned type:2;
-        unsigned max_volt:10;
-        unsigned min_volt:10;
         unsigned max_cur:10;
+        unsigned min_volt:10;
+        unsigned max_volt:10;
+        unsigned type:2;
         
     }obj_var_sply;
     
@@ -154,10 +154,10 @@ union libtypec_battery_supply_src
     unsigned int battery_supply;
     struct battery_supply_bits
     {
-        unsigned type:2;
-        unsigned max_volt:10;
-        unsigned min_volt:10;
         unsigned max_pwr:10;
+        unsigned min_volt:10;
+        unsigned max_volt:10;
+        unsigned type:2;
     }obj_bat_sply;
     
 };
@@ -167,15 +167,15 @@ union libtypec_pps_src
     unsigned int spr_pps_supply;
     struct pps_supply_bits
     {
-        unsigned type:2;
-        unsigned pps_type:2;
-        unsigned pwr_ltd:1;
-        unsigned rsvd1:2;
-        unsigned max_volt:8;
-        unsigned rsvd2:1;
-        unsigned min_volt:8;
-        unsigned rsvd3:1;
         unsigned max_cur:7;
+        unsigned rsvd1:1;
+        unsigned min_volt:8;
+        unsigned rsvd2:1;
+        unsigned max_volt:8;
+        unsigned rsvd3:2;
+        unsigned pwr_ltd:1;
+        unsigned pps_type:2;
+        unsigned type:2;
     }obj_pps_sply;
     
 };
@@ -185,16 +185,16 @@ union libtypec_fixed_supply_snk
     unsigned int fixed_supply;
     struct fixed_sply_bits
     {
-        unsigned type:2;
-        unsigned drp:1;
-        unsigned higher_caps:1;
-        unsigned uncons_pwr:1;
-        unsigned usb_comm_cap:1;
-        unsigned drd:1;
-        unsigned fr_swp:2;
-        unsigned rsvd:3;
-        unsigned volt:10;
         unsigned opr_cur:10;
+        unsigned volt:10;
+        unsigned rsvd:3;
+        unsigned fr_swp:2;
+        unsigned drd:1;
+        unsigned usb_comm_cap:1;
+        unsigned uncons_pwr:1;
+        unsigned higher_caps:1;
+        unsigned drp:1;
+        unsigned type:2;
     }obj_fixed_supply;
     
 };
@@ -204,10 +204,10 @@ union libtypec_variable_sply_sink
     unsigned int var_sply_snk;
     struct var_supply_bits
     {
-        unsigned type:2;
-        unsigned max_volt:10;
-        unsigned min_volt:10;
         unsigned opr_cur:10;
+        unsigned min_volt:10;
+        unsigned max_volt:10;
+        unsigned type:2;
     }obj_var_sply;
     
 };
@@ -217,10 +217,10 @@ union libtypec_battery_sply_sink
     unsigned int battery_supply;
     struct battery_sply_bits
     {
-        unsigned type:2;
-        unsigned max_volt:10;
-        unsigned min_volt:10;
         unsigned opr_pwr:10;
+        unsigned min_volt:10;
+        unsigned max_volt:10;
+        unsigned type:2;
     }obj_bat_sply;
     
 };
@@ -230,14 +230,14 @@ union libtypec_pps_sink
     unsigned int spr_pps;
     struct spr_pps_bits
     {
-        unsigned type:2;
-        unsigned pps_type:2;
-        unsigned rsvd1:3;
-        unsigned max_volt:8;
-        unsigned rsvd2:1;
-        unsigned min_volt:8;
-        unsigned rsvd3:1;
         unsigned max_cur:7;
+        unsigned rsvd1:1;
+        unsigned min_volt:8;
+        unsigned rsvd2:1;
+        unsigned max_volt:8;
+        unsigned rsvd3:3;
+        unsigned pps_type:2;
+        unsigned type:2;
     }obj_spr_pps;
     
 };
@@ -279,6 +279,11 @@ union libtypec_pps_sink
 #define POWER_OP_MODE_PD 3
 #define POWER_OP_MODE_TC_1_5 4
 #define POWER_OP_MODE_TC_3 5
+
+#define PDO_FIXED 0
+#define PDO_BATTERY 1
+#define PDO_VARIABLE 2
+#define PDO_AUGMENTED 3
 
 int libtypec_init(char **session_info);
 int libtypec_exit(void);

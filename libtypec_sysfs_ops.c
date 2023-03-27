@@ -939,6 +939,7 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 			pdo_data[num_pdos_read++] = get_programmable_supply_pdo(port_content,src_snk);
 
 		}
+
 		
 		
 	}

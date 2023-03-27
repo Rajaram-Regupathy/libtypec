@@ -344,6 +344,111 @@ const char *pd2p0_ama_field_desc[][MAX_FIELDS] = {
   {NULL},
 };
 
+// USB PD 2.0 Fixed Supply PDO - Source (Section 6.4.1.2.3)
+const struct vdo_field pd2p0_fixed_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Peak Current", 1, 20, 0x3},
+  {"Reserved", 0, 22, 0x7},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"USB Suspend Supported", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd2p0_fixed_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 2.0 Variable Supply PDO - Source (Section 6.4.1.2.4)
+const struct vdo_field pd2p0_variable_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd2p0_variable_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 2.0 Battery Supply PDO - Source (Section 6.4.1.2.5)
+const struct vdo_field pd2p0_battery_supply_src_fields[] = {
+  {"Maximum Allowable Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd2p0_battery_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 2.0 Fixed Supply PDO - Sink (Section 6.4.1.3.1)
+const struct vdo_field pd2p0_fixed_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Reserved", 0, 20, 0x1f},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"Higher Capability", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd2p0_fixed_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 2.0 Variable Supply PDO - Sink (Section 6.4.1.3.2)
+const struct vdo_field pd2p0_variable_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd2p0_variable_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 2.0 Battery Supply PDO - Sink (Section 6.4.1.3.3)
+const struct vdo_field pd2p0_battery_supply_snk_fields[] = {
+  {"Operational Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd2p0_battery_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
 
 // USB PD 3.0 ID Header VDO (Section 6.4.4.3.1.1)
 const struct vdo_field pd3p0_partner_id_header_fields[] = {
@@ -601,6 +706,161 @@ const char *pd3p0_dfp_field_desc[][MAX_FIELDS] = {
   {"Version 1.0", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved"},
 };
 
+// USB PD 3.0 Fixed Supply PDO - Source (Section 6.4.1.2.2)
+const struct vdo_field pd3p0_fixed_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Peak Current", 1, 20, 0x3},
+  {"Reserved", 0, 22, 0x3},
+  {"Unchunked Extended Messages Supported", 0, 24, 0x1},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"USB Suspend Supported", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd3p0_fixed_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 Variable Supply PDO - Source (Section 6.4.1.2.3)
+const struct vdo_field pd3p0_variable_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd3p0_variable_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 Battery Supply PDO - Source (Section 6.4.1.2.4)
+const struct vdo_field pd3p0_battery_supply_src_fields[] = {
+  {"Maximum Allowable Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd3p0_battery_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 PPS APDO - Source (Section 6.4.1.2.5)
+const struct vdo_field pd3p0_pps_apdo_src_fields[] = {
+  {"Maximum Current in 50mA increments", 1, 0, 0x7f},
+  {"Reserved", 0, 7, 0x0},
+  {"Minimum Voltage in 100mV increments", 1, 8, 0xff},
+  {"Reserved", 0, 16, 0x0},
+  {"Maximum Voltage in 100mV increments", 1, 17, 0xff},
+  {"Reserved", 0, 25, 0x0},
+  {"PPS Power Limited", 1, 27, 0x1},
+  {"Programable Power Supply", 1, 28, 0x3},
+  {"Augmented Power Data Object", 1, 30, 0x3},
+};
+const char *pd3p0_pps_apdo_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 Fixed Supply PDO - Sink (Section 6.4.1.3.1)
+const struct vdo_field pd3p0_fixed_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Reserved", 0, 20, 0x7},
+  {"Fast Role Swap Required", 1, 23, 0x3},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"Higher Capability", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd3p0_fixed_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {"Fast Swap not supported", "Default USB Power", "1.5A @ 5V", "3.0A @ 5V"},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 Variable Supply PDO - Sink (Section 6.4.1.3.2)
+const struct vdo_field pd3p0_variable_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd3p0_variable_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 Battery Supply PDO - Sink (Section 6.4.1.3.3)
+const struct vdo_field pd3p0_battery_supply_snk_fields[] = {
+  {"Operational Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd3p0_battery_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.0 PPS APDO - Sink (Section 6.4.1.3.4)
+const struct vdo_field pd3p0_pps_apdo_snk_fields[] = {
+  {"Maximum Current in 50mA increments", 1, 0, 0x7f},
+  {"Reserved", 0, 7, 0x0},
+  {"Minimum Voltage in 100mV increments", 1, 8, 0xff},
+  {"Reserved", 0, 16, 0x0},
+  {"Maximum Voltage in 100mV increments", 1, 17, 0xff},
+  {"Reserved", 0, 25, 0x7},
+  {"Programable Power Supply", 1, 28, 0x3},
+  {"Augmented Power Data Object", 1, 30, 0x3},
+};
+const char *pd3p0_pps_apdo_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
 
 // USB PD 3.1 ID Header VDO (Section 6.4.4.3.1.1)
 const struct vdo_field pd3p1_partner_id_header_fields[] = {
@@ -834,6 +1094,163 @@ const char *pd3p1_dfp_field_desc[][MAX_FIELDS] = {
   {"Version 1.0", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved"},
 };
 
+// USB PD 3.1 Fixed Supply PDO - Source (Section 6.4.1.2.2)
+const struct vdo_field pd3p1_fixed_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Peak Current", 1, 20, 0x3},
+  {"Reserved", 0, 22, 0x1},
+  {"EPR Mode Capable", 1, 23, 0x1},
+  {"Unchunked Extended Messages Supported", 0, 24, 0x1},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"USB Suspend Supported", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd3p1_fixed_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 Variable Supply PDO - Source (Section 6.4.1.2.3)
+const struct vdo_field pd3p1_variable_supply_src_fields[] = {
+  {"Maximum Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd3p1_variable_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 Battery Supply PDO - Source (Section 6.4.1.2.4)
+const struct vdo_field pd3p1_battery_supply_src_fields[] = {
+  {"Maximum Allowable Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd3p1_battery_supply_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 PPS APDO - Source (Section 6.4.1.2.5)
+const struct vdo_field pd3p1_pps_apdo_src_fields[] = {
+  {"Maximum Current in 50mA increments", 1, 0, 0x7f},
+  {"Reserved", 0, 7, 0x0},
+  {"Minimum Voltage in 100mV increments", 1, 8, 0xff},
+  {"Reserved", 0, 16, 0x0},
+  {"Maximum Voltage in 100mV increments", 1, 17, 0xff},
+  {"Reserved", 0, 25, 0x0},
+  {"PPS Power Limited", 1, 27, 0x1},
+  {"SPR PPS", 1, 28, 0x3},
+  {"Augmented Power Data Object", 1, 30, 0x3},
+};
+const char *pd3p1_pps_apdo_src_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 Fixed Supply PDO - Sink (Section 6.4.1.3.1)
+const struct vdo_field pd3p1_fixed_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Reserved", 0, 20, 0x7},
+  {"Fast Role Swap Required", 1, 23, 0x3},
+  {"Dual-Role Data", 1, 25, 0x1},
+  {"USB Communications Capable", 1, 26, 0x1},
+  {"Unconstrained Power", 1, 27, 0x1},
+  {"Higher Capability", 1, 28, 0x1},
+  {"Daul-Role Power", 1, 29, 0x1},
+  {"Fixed supply", 1, 30, 0x3},
+};
+const char *pd3p1_fixed_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {"Fast Swap not supported", "Default USB Power", "1.5A @ 5V", "3.0A @ 5V"},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 Variable Supply PDO - Sink (Section 6.4.1.3.2)
+const struct vdo_field pd3p1_variable_supply_snk_fields[] = {
+  {"Operational Current in 10mA units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Variable Supply", 1, 30, 0x3},
+};
+const char *pd3p1_variable_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 Battery Supply PDO - Sink (Section 6.4.1.3.3)
+const struct vdo_field pd3p1_battery_supply_snk_fields[] = {
+  {"Operational Power in 250mW units", 1, 0, 0x3ff},
+  {"Minimum Voltage in 50mV units", 1, 10, 0x3ff},
+  {"Maximum Voltage in 50mV units", 1, 20, 0x3ff},
+  {"Battery", 1, 30, 0x3},
+};
+const char *pd3p1_battery_supply_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
+// USB PD 3.1 PPS APDO - Sink (Section 6.4.1.3.4)
+const struct vdo_field pd3p1_pps_apdo_snk_fields[] = {
+  {"Maximum Current in 50mA increments", 1, 0, 0x7f},
+  {"Reserved", 0, 7, 0x0},
+  {"Minimum Voltage in 100mV increments", 1, 8, 0xff},
+  {"Reserved", 0, 16, 0x0},
+  {"Maximum Voltage in 100mV increments", 1, 17, 0xff},
+  {"Reserved", 0, 25, 0x7},
+  {"SPR PPS", 1, 28, 0x3},
+  {"Augmented Power Data Object", 1, 30, 0x3},
+};
+const char *pd3p1_pps_apdo_snk_field_desc[][MAX_FIELDS] = {
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+  {NULL},
+};
+
 // Alternate mode VDOs
 const struct vdo_field dp_alt_mode_partner_fields[] = {
   {"Port Capability", 1, 0, 0x3},
@@ -943,6 +1360,10 @@ void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num);
 void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes, struct altmode_data *am_data);
 
 void print_identity_data(int recipient, union libtypec_discovered_identity id, struct libtypec_connector_cap_data conn_data);
+
+void print_source_pdo_data(unsigned int* pdo_data, int num_pdos, int revision);
+
+void print_sink_pdo_data(unsigned int* pdo_data, int num_pdos, int revision);
 
 void lstypec_print(char *val, int type);
 

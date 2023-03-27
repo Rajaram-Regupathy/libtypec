@@ -37,6 +37,7 @@ struct libtypec_connector_cap_data conn_data;
 struct libtypec_connector_status conn_sts;
 struct libtypec_cable_property cable_prop;
 union libtypec_discovered_identity id;
+unsigned int* pdo_data;
 
 struct altmode_data am_data[64];
 char *session_info[LIBTYPEC_SESSION_MAX_INDEX];
@@ -518,6 +519,110 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
   }
 }
 
+void print_source_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
+  for (int i = 0; i < num_pdos; i++) {
+    printf("    PDO%d: 0x%08x\n", i+1, pdo_data[i]);
+
+    if (verbose) {
+      if (revision == 0x20) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 10, pd2p0_fixed_supply_src_fields, pd2p0_fixed_supply_src_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd2p0_battery_supply_src_fields, pd2p0_battery_supply_src_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd2p0_variable_supply_src_fields, pd2p0_variable_supply_src_field_desc);
+            break;
+        }
+      } else if (revision == 0x30) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 11, pd3p0_fixed_supply_src_fields, pd3p0_fixed_supply_src_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd3p0_battery_supply_src_fields, pd3p0_battery_supply_src_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd3p0_variable_supply_src_fields, pd3p0_variable_supply_src_field_desc);
+            break;
+          case PDO_AUGMENTED:
+            print_vdo(pdo_data[i], 9, pd3p0_pps_apdo_src_fields, pd3p0_pps_apdo_src_field_desc);
+            break;
+        }
+      } else if (revision == 0x31) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 12, pd3p1_fixed_supply_src_fields, pd3p1_fixed_supply_src_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd3p1_battery_supply_src_fields, pd3p1_battery_supply_src_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd3p1_variable_supply_src_fields, pd3p1_variable_supply_src_field_desc);
+            break;
+          case PDO_AUGMENTED:
+            print_vdo(pdo_data[i], 9, pd3p1_pps_apdo_src_fields, pd3p1_pps_apdo_src_field_desc);
+            break;
+        }
+      }
+    }
+  }
+}
+
+void print_sink_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
+  for (int i = 0; i < num_pdos; i++) {
+    printf("    PDO%d: 0x%08x\n", i+1, pdo_data[i]);
+
+    if (verbose) {
+      if (revision == 0x20) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 9, pd2p0_fixed_supply_snk_fields, pd2p0_fixed_supply_snk_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd2p0_battery_supply_snk_fields, pd2p0_battery_supply_snk_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd2p0_variable_supply_snk_fields, pd2p0_variable_supply_snk_field_desc);
+            break;
+        }
+      } else if (revision == 0x30) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 10, pd3p0_fixed_supply_snk_fields, pd3p0_fixed_supply_snk_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd3p0_battery_supply_snk_fields, pd3p0_battery_supply_snk_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd3p0_variable_supply_snk_fields, pd3p0_variable_supply_snk_field_desc);
+            break;
+          case PDO_AUGMENTED:
+            print_vdo(pdo_data[i], 8, pd3p0_pps_apdo_snk_fields, pd3p0_pps_apdo_snk_field_desc);
+            break;
+        }
+      } else if (revision == 0x31) {
+        switch((pdo_data[i] >> 30)) {
+          case PDO_FIXED:
+            print_vdo(pdo_data[i], 10, pd3p1_fixed_supply_snk_fields, pd3p1_fixed_supply_snk_field_desc);
+            break;
+          case PDO_BATTERY:
+            print_vdo(pdo_data[i], 4, pd3p1_battery_supply_snk_fields, pd3p1_battery_supply_snk_field_desc);
+            break;
+          case PDO_VARIABLE:
+            print_vdo(pdo_data[i], 4, pd3p1_variable_supply_snk_fields, pd3p1_variable_supply_snk_field_desc);
+            break;
+          case PDO_AUGMENTED:
+            print_vdo(pdo_data[i], 8, pd3p1_pps_apdo_snk_fields, pd3p1_pps_apdo_snk_field_desc);
+            break;
+        }
+      }
+    }
+  }
+}
+
 void lstypec_print(char *val, int type)
 {
     if (type == LSTYPEC_ERROR)
@@ -531,7 +636,7 @@ void lstypec_print(char *val, int type)
 
 int main(int argc, char *argv[])
 {
-  int ret, opt, num_modes;
+  int ret, opt, num_modes, num_pdos;
 
   // Process Command Args
   static const struct option options[] = {
@@ -577,6 +682,20 @@ int main(int argc, char *argv[])
     libtypec_get_conn_capability(i, &conn_data);
     print_conn_capability(conn_data);
 
+    // Connector PDOs
+    pdo_data = malloc(sizeof(int)*8);
+    ret = libtypec_get_pdos(i, 0, 0, &num_pdos, 1, 0, pdo_data);
+    if (ret > 0) {
+      printf("  Connector PDO Data (Source):\n");
+      print_source_pdo_data(pdo_data, num_pdos, get_cap_data.bcdPDVersion);
+    }
+    ret = libtypec_get_pdos(i, 0, 0, &num_pdos, 0, 0, pdo_data);
+    if (ret > 0) {
+      printf("  Connector PDO Data (Sink):\n");
+      print_source_pdo_data(pdo_data, num_pdos, get_cap_data.bcdPDVersion);
+    }
+    free(pdo_data);
+
     // Cable Properties
     ret = libtypec_get_cable_properties(i, &cable_prop);
     if (ret >= 0)
@@ -608,6 +727,18 @@ int main(int argc, char *argv[])
     if (ret >= 0) {
       print_identity_data(AM_SOP, id, conn_data);
     }
+    pdo_data = malloc(sizeof(int)*8);
+    ret = libtypec_get_pdos(i, 1, 0, &num_pdos, 1, 0, pdo_data);
+    if (ret > 0) {
+      printf("  Partner PDO Data (Source):\n");
+      print_source_pdo_data(pdo_data, num_pdos, conn_data.partner_rev);
+    }
+    ret = libtypec_get_pdos(i, 1, 0, &num_pdos, 0, 0, pdo_data);
+    if (ret > 0) {
+      printf("  Partner PDO Data (Sink):\n");
+      print_sink_pdo_data(pdo_data, num_pdos, conn_data.partner_rev);
+    }
+    free(pdo_data);
   }
 
   printf("\n");
