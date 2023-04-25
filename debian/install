@@ -1,0 +1,3 @@
+usr/lib/*/lib*so*
+usr/include/*/*h
+usr/share/pkgconfig/libtypec.pc

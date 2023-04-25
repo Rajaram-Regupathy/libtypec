@@ -1,0 +1,35 @@
+Source: libtypec
+Rules-Requires-Root: no
+Section: utils
+Priority: optional
+Maintainer: Colin Ian King <colin.i.king@gmail.com>
+Build-Depends: debhelper (>= 13),
+               debhelper-compat (=13),
+	       cmake,
+	       dh-cmake
+Standards-Version: 4.1.2
+Homepage: https://github.com/Rajaram-Regupathy/libtypec
+
+Package: libtypec1
+Section: libs
+Architecture: any
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Description: generic interface for efficient USB-C port management
+ libtypec is aimed to provide a generic interface abstracting all platform
+ complexity for user space to develop tools for efficient USB-C port
+ management. The library can also enable development of diagnostic and
+ debug tools to debug system issues around USB-C/USB PD topology.
+
+Package: libtypec-dev
+Section: libdevel
+Architecture: any
+Priority: optional
+Depends: ${misc:Depends}, libtypec1 (= ${binary:Version})
+Pre-Depends: ${misc:Pre-Depends}
+Description: Development files for an interface for USB-C port management
+ libtypec is aimed to provide a generic interface abstracting all platform
+ complexity for user space to develop tools for efficient USB-C port
+ management. The library can also enable development of diagnostic and
+ debug tools to debug system issues around USB-C/USB PD topology.
