@@ -46,7 +46,7 @@ int verbose = 0;
 enum product_type get_cable_product_type(short rev, uint32_t id)
 {
   // Decode cable product type
-  if (rev == 0x20)
+  if (rev == 0x200)
   {
     // USB PD 2.0 cable
     if ((id & pd_ufp_product_type_mask) == pd2p0_passive_cable)
@@ -56,7 +56,7 @@ enum product_type get_cable_product_type(short rev, uint32_t id)
     else
       return product_type_other;
   }
-  else if (rev == 0x30)
+  else if (rev == 0x300)
   {
     // USB PD 3.0 cable
     if ((id & pd_ufp_product_type_mask) == pd3p0_passive_cable)
@@ -66,7 +66,7 @@ enum product_type get_cable_product_type(short rev, uint32_t id)
     else
       return product_type_other;
   }
-  else if (rev == 0x31)
+  else if (rev == 0x310)
   {
     // USB PD 3.1 cable
     if ((id & pd_ufp_product_type_mask) == pd3p1_passive_cable)
@@ -84,7 +84,7 @@ enum product_type get_cable_product_type(short rev, uint32_t id)
 enum product_type get_partner_product_type(short rev, uint32_t id)
 {
   // Decode partner product type
-  if (rev == 0x20)
+  if (rev == 0x200)
   {
     // USB PD 2.0 partner
     if ((id & pd_ufp_product_type_mask) == pd2p0_ama)
@@ -92,7 +92,7 @@ enum product_type get_partner_product_type(short rev, uint32_t id)
     else
       return product_type_other;
   }
-  else if (rev == 0x30)
+  else if (rev == 0x300)
   {
     // USB PD 3.0 partner
     char ufp_supported = 0;
@@ -122,7 +122,7 @@ enum product_type get_partner_product_type(short rev, uint32_t id)
     else
       return product_type_other;
   }
-  else if (rev == 0x31)
+  else if (rev == 0x310)
   {
     // USB PD 3.1 partner
     char ufp_supported = 0;
@@ -301,7 +301,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
       // ID Header/Cert Stat/Product are base on revision
       switch (conn_data.partner_rev)
       {
-        case 0x20:
+        case 0x200:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 6, pd2p0_partner_id_header_fields, pd2p0_partner_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -309,7 +309,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
           printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd2p0_product_fields, pd2p0_product_field_desc);
           break;
-        case 0x30:
+        case 0x300:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 7, pd3p0_partner_id_header_fields, pd3p0_partner_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -317,7 +317,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
           printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p0_product_fields, pd3p0_product_field_desc);
           break;
-        case 0x31:
+        case 0x310:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 8, pd3p1_partner_id_header_fields, pd3p1_partner_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -421,7 +421,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
       // ID Header/Cert Stat/Product are base on revision
       switch (conn_data.cable_rev)
       {
-        case 0x20:
+        case 0x200:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 6, pd2p0_cable_id_header_fields, pd2p0_cable_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -429,7 +429,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
           printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd2p0_product_fields, pd2p0_product_field_desc);
           break;
-        case 0x30:
+        case 0x300:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 7, pd3p0_cable_id_header_fields, pd3p0_cable_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -437,7 +437,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
           printf("    Product: 0x%08x\n", id.disc_id.product);
           print_vdo(((uint32_t) id.disc_id.product), 2, pd3p0_product_fields, pd3p0_product_field_desc);
           break;
-        case 0x31:
+        case 0x310:
           printf("    ID Header: 0x%08x\n", id.disc_id.id_header);
           print_vdo(((uint32_t) id.disc_id.id_header), 8, pd3p1_cable_id_header_fields, pd3p1_cable_id_header_field_desc);
           printf("    Cert Stat: 0x%08x\n", id.disc_id.cert_stat);
@@ -524,7 +524,7 @@ void print_source_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
     printf("    PDO%d: 0x%08x\n", i+1, pdo_data[i]);
 
     if (verbose) {
-      if (revision == 0x20) {
+      if (revision == 0x200) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 10, pd2p0_fixed_supply_src_fields, pd2p0_fixed_supply_src_field_desc);
@@ -536,7 +536,7 @@ void print_source_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
             print_vdo(pdo_data[i], 4, pd2p0_variable_supply_src_fields, pd2p0_variable_supply_src_field_desc);
             break;
         }
-      } else if (revision == 0x30) {
+      } else if (revision == 0x300) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 11, pd3p0_fixed_supply_src_fields, pd3p0_fixed_supply_src_field_desc);
@@ -551,7 +551,7 @@ void print_source_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
             print_vdo(pdo_data[i], 9, pd3p0_pps_apdo_src_fields, pd3p0_pps_apdo_src_field_desc);
             break;
         }
-      } else if (revision == 0x31) {
+      } else if (revision == 0x310) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 12, pd3p1_fixed_supply_src_fields, pd3p1_fixed_supply_src_field_desc);
@@ -576,7 +576,7 @@ void print_sink_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
     printf("    PDO%d: 0x%08x\n", i+1, pdo_data[i]);
 
     if (verbose) {
-      if (revision == 0x20) {
+      if (revision == 0x200) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 9, pd2p0_fixed_supply_snk_fields, pd2p0_fixed_supply_snk_field_desc);
@@ -588,7 +588,7 @@ void print_sink_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
             print_vdo(pdo_data[i], 4, pd2p0_variable_supply_snk_fields, pd2p0_variable_supply_snk_field_desc);
             break;
         }
-      } else if (revision == 0x30) {
+      } else if (revision == 0x300) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 10, pd3p0_fixed_supply_snk_fields, pd3p0_fixed_supply_snk_field_desc);
@@ -603,7 +603,7 @@ void print_sink_pdo_data(unsigned int* pdo_data, int num_pdos, int revision) {
             print_vdo(pdo_data[i], 8, pd3p0_pps_apdo_snk_fields, pd3p0_pps_apdo_snk_field_desc);
             break;
         }
-      } else if (revision == 0x31) {
+      } else if (revision == 0x310) {
         switch((pdo_data[i] >> 30)) {
           case PDO_FIXED:
             print_vdo(pdo_data[i], 10, pd3p1_fixed_supply_snk_fields, pd3p1_fixed_supply_snk_field_desc);
