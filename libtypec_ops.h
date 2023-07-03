@@ -67,6 +67,10 @@ struct libtypec_os_backend
     int (*get_connector_status_ops)(int conn_num, struct libtypec_connector_status *conn_sts);
 
     int (*get_pd_message_ops)(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
+
+    int (*get_bb_status)(unsigned int *num_bb_instance);
+
+    int (*get_bb_data)(int num_billboards,char* bb_data);
 };
 
 #endif /*LIBTYPEC_OPS_H*/

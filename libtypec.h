@@ -302,4 +302,7 @@ int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *
 int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status *conn_sts);
 int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp);
 
+int libtypec_get_bb_status(unsigned int *num_bb_instance);
+int libtypec_get_bb_data(int num_billboards,char* bb_data);
+
 #endif /*LIBTYPEC_H*/

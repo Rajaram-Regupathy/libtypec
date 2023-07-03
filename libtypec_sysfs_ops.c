@@ -36,10 +36,22 @@ SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <errno.h>
+#include <sys/ioctl.h>
+#include <linux/usbdevice_fs.h>
+#include <linux/usb/ch9.h>
+#include <ftw.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define MAX_PORT_STR 7		/* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
 #define OS_TYPE_CHROME 1
+
+static int num_bb_if;
+#define MAX_BB_PATH_STORED 4
+
+char bb_dev_path[MAX_BB_PATH_STORED][512];
 
 static int get_os_type(void)
 {
@@ -458,6 +470,84 @@ static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 	}
 
 }
+
+static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typeflag)
+{
+	FILE				*fd;
+
+	union {
+		char buf[255];
+		struct usb_interface_descriptor intf;
+	} u_usb_if;
+
+	if (typeflag != FTW_F)
+		return 0;
+
+	fd = fopen(usb_path, "rb");
+	if (!fd) {
+		return -EIO;
+	}
+
+	for (;;) {
+		if (fread(u_usb_if.buf, 1, 1, fd) != 1)
+			break;
+		if (fread(u_usb_if.buf + 1, (unsigned char)u_usb_if.buf[0] - 1, 1, fd) != 1)
+			break;
+
+		if (u_usb_if.intf.bLength == sizeof u_usb_if.intf
+		&& u_usb_if.intf.bDescriptorType == USB_DT_INTERFACE
+		&& u_usb_if.intf.bNumEndpoints == 0
+		&& u_usb_if.intf.bInterfaceClass == 0x11
+		&& u_usb_if.intf.bInterfaceSubClass == 0
+		&& u_usb_if.intf.bInterfaceProtocol == 0)
+		{
+			if(num_bb_if < MAX_BB_PATH_STORED)
+				strcpy(bb_dev_path[num_bb_if],usb_path);
+			num_bb_if++;
+		}
+	}
+
+	return 0;
+}
+
+static int read_bb_bos_descriptor(int num_billboards,char * bb_data)
+{
+	int fd1 = open(bb_dev_path[num_billboards-1],O_RDWR );
+
+	if(fd1 < 0)
+		return -errno;
+
+	int len,ret;
+
+	struct usbdevfs_ctrltransfer msg;
+
+	msg.bRequestType = 0x80;
+	msg.bRequest = 6;
+	msg.wValue = 15 << 8;
+	msg.wIndex = 0;
+	msg.wLength = 5;
+	msg.data = bb_data;
+	msg.timeout = 5000;
+	ret = ioctl(fd1,USBDEVFS_CONTROL,&msg);
+	len = (bb_data[3] << 8 | bb_data[2]);
+
+	memset(&msg,0,sizeof(struct usbdevfs_ctrltransfer));
+	memset(bb_data,0,512);
+
+	msg.bRequestType = 0x80;
+	msg.bRequest = 6;
+	msg.wValue = 15 << 8;
+	msg.wIndex = 0;
+	msg.wLength = len;
+	msg.data = bb_data;
+	msg.timeout = 5000;
+	ret = ioctl(fd1,USBDEVFS_CONTROL,&msg);
+
+	close(fd1);
+
+	return ret;
+}
+
 static int libtypec_sysfs_init(char **session_info)
 {
 
@@ -952,6 +1042,33 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 
 }
 
+static int libtypec_sysfs_get_bb_status(unsigned int *num_bb_instance)
+{
+	num_bb_if = 0;
+
+	if (ftw ("/dev/bus/usb/", count_billbrd_if, 0) != 0)
+	{
+		return -EIO;
+	}
+
+	*num_bb_instance = num_bb_if;
+	return 0;
+}
+
+static int libtypec_sysfs_get_bb_data(int num_billboards,char* bb_data)
+{
+	int ret = 0, count;
+
+	ret =  libtypec_sysfs_get_bb_status(&count);
+
+	if(num_billboards >count)
+		return -EINVAL;
+	ret = read_bb_bos_descriptor(num_billboards,bb_data);
+
+	return ret;
+}
+
+
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.init = libtypec_sysfs_init,
 	.exit = libtypec_sysfs_exit,
@@ -964,4 +1081,6 @@ const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.get_cable_properties_ops = libtypec_sysfs_get_cable_properties_ops,
 	.get_connector_status_ops = libtypec_sysfs_get_connector_status_ops,
 	.get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,
+	.get_bb_status = libtypec_sysfs_get_bb_status,
+	.get_bb_data = libtypec_sysfs_get_bb_data,
 };

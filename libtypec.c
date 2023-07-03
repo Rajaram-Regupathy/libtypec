@@ -38,6 +38,8 @@ SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 static int sysfs_method = 0;
 static char ver_buf[64];
@@ -124,6 +126,7 @@ char *get_os_name(void)
 
     return p;
 }
+
 /**
  * This function initializes libtypec and must be called before
  * calling any other libtypec function.
@@ -299,5 +302,42 @@ int libtypec_get_pdos (int conn_num, int partner, int offset, int *num_pdo, int 
         return -EIO;
 
     return cur_libtypec_os_backend->get_pdos_ops(conn_num,  partner, offset,  num_pdo,  src_snk, type, pdo_data);
+
+}
+/**
+ * This function shall be used to retrive number of billboard interfaces in the system
+ *
+ * \param  num_bb_instance Reference passed to retrive number of billboard interfaces. If 0 then 
+ * no billboard interface and >0 indicates number of BB devices enumerated in the system.
+ *
+ * \returns 0 on success
+ */
+int libtypec_get_bb_status(unsigned int *num_bb_instance)
+{
+
+   if (!cur_libtypec_os_backend)
+        return -EIO;
+
+    return cur_libtypec_os_backend->get_bb_status(num_bb_instance);
+
+}
+
+/**
+ * This function shall be used to retrive Billboard Capability Descriptor of BB device instances
+ * in the system. When multiple BB devices are in the system instance shall indicate the instance
+ * index for data to be retrived
+ *
+ * \param  bb_instance index of the BB instance
+ * \param  bb_data BB capability descriptor of the device instance
+ *
+ * \returns 0 on success
+ */
+int libtypec_get_bb_data(int bb_instance,char* bb_data)
+{
+
+   if (!cur_libtypec_os_backend)
+        return -EIO;
+
+    cur_libtypec_os_backend->get_bb_data(bb_instance,bb_data);
 
 }
