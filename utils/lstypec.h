@@ -31,7 +31,7 @@
 #include "names.h"
 
 #define LSTYPEC_MAJOR_VERSION 0
-#define LSTYPEC_MINOR_VERSION 2
+#define LSTYPEC_MINOR_VERSION 3
 
 #define LSTYPEC_ERROR 1
 #define LSTYPEC_INFO 2
