@@ -5,7 +5,7 @@ includedir=${prefix}/
 
 Name: libtypec
 Description: USB-Type C and USB Power Delivery class devices
-Version: 0.1.0
+Version: 0.3.1
 
 Requires:
 Libs: -L${libdir} -llibtypec

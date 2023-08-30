@@ -51,7 +51,7 @@ static const struct libtypec_os_backend *cur_libtypec_os_backend;
 #define OPS_METHOD_SYSFS 1
 
 /**
- * \mainpage libtypec 0.1 API Reference
+ * \mainpage libtypec 0.3.1 API Reference
  *
  * \section intro Introduction
  *

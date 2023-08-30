@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(libtypec VERSION 0.1.0 DESCRIPTION "USB-Type C and USB Power Delivery class devices")
+project(libtypec VERSION 0.3.1 DESCRIPTION "USB-Type C and USB Power Delivery class devices")
 
 include(GNUInstallDirs)
 include(CTest)
@@ -14,7 +14,7 @@ set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-sec
 set_target_properties(libtypec PROPERTIES
 	OUTPUT_NAME "typec"
 	VERSION ${PROJECT_VERSION}
-	SOVERSION 1
+	SOVERSION ${PROJECT_VERSION}
 	PUBLIC_HEADER libtypec.h)
 
 
