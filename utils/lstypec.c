@@ -180,22 +180,24 @@ void print_session_info()
     printf("lstypec %d.%d Session Info\n", LSTYPEC_MAJOR_VERSION, LSTYPEC_MINOR_VERSION);
     printf("  Using %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
     printf("  %s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
+    printf("  libtypec using %s\n", session_info[LIBTYPEC_OPS_INDEX]);
 }
 
 void print_ppm_capability(struct libtypec_capabiliy_data ppm_data)
 {
     printf("\nUSB-C Platform Policy Manager Capability\n");
-    printf("  Number of Connectors: %d\n", ppm_data.bNumConnectors);
-    printf("  Number of Alternate Modes: %d\n", ppm_data.bNumAltModes);
-    printf("  USB Power Delivery Revision: %d.%d\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
-    printf("  USB Type-C Revision: %d.%d\n", (ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
+    printf("  Number of Connectors: %x\n", ppm_data.bNumConnectors);
+    printf("  Number of Alternate Modes: %x\n", ppm_data.bNumAltModes);
+    printf("  USB Power Delivery Revision: %x.%x\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
+    printf("  USB Type-C Revision:  %x.%x\n",(ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
+    printf("  USB BC Revision: %x.%x\n", (ppm_data.bcdBCVersion >> 8) & 0XFF, (ppm_data.bcdBCVersion) & 0XFF);
 }
 
 void print_conn_capability(struct libtypec_connector_cap_data conn_data)
 {
-    char *opr_mode_str[] = {"Source", "Sink", "DRP", "Analog Audio", "Debug Accessory", "USB2", "USB3", "Alternate Mode"};
+    char *opr_mode_str[] = {"Rp Only", "Rd Only", "DRP(Rp/Rd)", "Analog Audio", "Debug Accessory", "USB2", "USB3", "Alternate Mode"};
 
-    printf("  Operation Mode: %s\n", opr_mode_str[conn_data.opr_mode]);
+    printf("  Operation Mode: 0x%02x\n", conn_data.opr_mode);
 }
 
 void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num)
@@ -682,6 +684,7 @@ int main(int argc, char *argv[])
     libtypec_get_conn_capability(i, &conn_data);
     print_conn_capability(conn_data);
 
+
     // Connector PDOs
     pdo_data = malloc(sizeof(int)*8);
     ret = libtypec_get_pdos(i, 0, 0, &num_pdos, 1, 0, pdo_data);
@@ -689,6 +692,7 @@ int main(int argc, char *argv[])
       printf("  Connector PDO Data (Source):\n");
       print_source_pdo_data(pdo_data, num_pdos, get_cap_data.bcdPDVersion);
     }
+
     ret = libtypec_get_pdos(i, 0, 0, &num_pdos, 0, 0, pdo_data);
     if (ret > 0) {
       printf("  Connector PDO Data (Sink):\n");
@@ -700,7 +704,7 @@ int main(int argc, char *argv[])
     ret = libtypec_get_cable_properties(i, &cable_prop);
     if (ret >= 0)
       print_cable_prop(cable_prop, i);
-
+    
     // Supported Alternate Modes
     printf("  Alternate Modes Supported:\n");
   
@@ -709,7 +713,7 @@ int main(int argc, char *argv[])
       print_alternate_mode_data(AM_CONNECTOR, 0x0, num_modes, am_data);
     else
       printf("    No Local Modes listed with typec class\n");
-
+   
     // Cable
     num_modes = libtypec_get_alternate_modes(AM_SOP_PR, i, am_data);
     if (num_modes >= 0) 
@@ -718,7 +722,7 @@ int main(int argc, char *argv[])
     if (ret >= 0) {
       print_identity_data(AM_SOP_PR, id, conn_data);
     }
-
+    
     // Partner
     num_modes = libtypec_get_alternate_modes(AM_SOP, i, am_data);
     if (num_modes >= 0) 
@@ -728,16 +732,19 @@ int main(int argc, char *argv[])
       print_identity_data(AM_SOP, id, conn_data);
     }
     pdo_data = malloc(sizeof(int)*8);
+    
     ret = libtypec_get_pdos(i, 1, 0, &num_pdos, 1, 0, pdo_data);
     if (ret > 0) {
       printf("  Partner PDO Data (Source):\n");
       print_source_pdo_data(pdo_data, num_pdos, conn_data.partner_rev);
     }
+   
     ret = libtypec_get_pdos(i, 1, 0, &num_pdos, 0, 0, pdo_data);
     if (ret > 0) {
       printf("  Partner PDO Data (Sink):\n");
       print_sink_pdo_data(pdo_data, num_pdos, conn_data.partner_rev);
     }
+  
     free(pdo_data);
   }
 

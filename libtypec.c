@@ -31,6 +31,7 @@ SOFTWARE.
 #include <linux/magic.h>
 #include <linux/types.h>
 #include <sys/statfs.h>
+#include "libtypec.h"
 #include "libtypec_ops.h"
 #include <sys/utsname.h>
 #include <stdio.h>
@@ -41,10 +42,13 @@ SOFTWARE.
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static int sysfs_method = 0;
+static int ops_method = -1;
 static char ver_buf[64];
 static struct utsname ker_uname;
 static const struct libtypec_os_backend *cur_libtypec_os_backend;
+
+#define OPS_METHOD_DBGFS 0
+#define OPS_METHOD_SYSFS 1
 
 /**
  * \mainpage libtypec 0.1 API Reference
@@ -142,6 +146,7 @@ int libtypec_init(char **session_info)
 {
     int ret;
     struct statfs sb;
+    char *ops_str[] = {"debugfs","sysfs"};
 
     sprintf(ver_buf, "libtypec %d.%d", LIBTYPEC_MAJOR_VERSION, LIBTYPEC_MINOR_VERSION);
 
@@ -149,14 +154,35 @@ int libtypec_init(char **session_info)
     session_info[LIBTYPEC_KERNEL_INDEX] = get_kernel_verion();
     session_info[LIBTYPEC_OS_INDEX] = get_os_name();
 
-    ret = statfs(SYSFS_TYPEC_PATH, &sb);
+    /**
+        debugfs provides direct access to UCSI command and response.
+        Try opening debugfs before falling back to sysfs
+    */
+    ret = statfs(UCSI_DEBUGFS_PATH, &sb);
 
-    if (ret == 0 && sb.f_type == SYSFS_MAGIC)
+    if (ret == 0 && sb.f_type == DEBUGFS_MAGIC)
     {
-        sysfs_method = 1;
-        cur_libtypec_os_backend = &libtypec_lnx_sysfs_backend;
-        ret = cur_libtypec_os_backend->init(session_info);
+            ops_method = OPS_METHOD_DBGFS;
+            cur_libtypec_os_backend = &libtypec_lnx_dbgfs_backend;
+	    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->init );
+	    else
+                ret = cur_libtypec_os_backend->init(session_info);
     }
+    else
+    {
+        ret = statfs(SYSFS_TYPEC_PATH, &sb);
+
+        if (ret == 0 && sb.f_type == SYSFS_MAGIC)
+        {
+            ops_method = OPS_METHOD_SYSFS;
+            cur_libtypec_os_backend = &libtypec_lnx_sysfs_backend;
+            if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->init );
+            else
+            	ret = cur_libtypec_os_backend->init(session_info);
+        }    
+    }
+
+    session_info[LIBTYPEC_OPS_INDEX] = ops_str[ops_method];
 
     return ret;
 }
@@ -172,6 +198,7 @@ int libtypec_init(char **session_info)
 
 int libtypec_exit(void)
 {
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->exit )
     /* clear session info */
 
     return cur_libtypec_os_backend->exit();
@@ -186,7 +213,7 @@ int libtypec_exit(void)
  */
 int libtypec_get_capability(struct libtypec_capabiliy_data *cap_data)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_capability_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_capability_ops(cap_data);
@@ -203,7 +230,7 @@ int libtypec_get_capability(struct libtypec_capabiliy_data *cap_data)
  */
 int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_data *conn_cap_data)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_conn_capability_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_conn_capability_ops(conn_num, conn_cap_data);
@@ -222,7 +249,7 @@ int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_dat
  */
 int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_alternate_modes )
         return -EIO;
 
     return cur_libtypec_os_backend->get_alternate_modes(recipient, conn_num, alt_mode_data);
@@ -236,7 +263,7 @@ int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_dat
  */
 int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *cbl_prop_data)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_cable_properties_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_cable_properties_ops(conn_num, cbl_prop_data);
@@ -251,7 +278,7 @@ int libtypec_get_cable_properties(int conn_num, struct libtypec_cable_property *
  */
 int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status *conn_sts)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_connector_status_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_connector_status_ops(conn_num, conn_sts);
@@ -271,7 +298,7 @@ int libtypec_get_connector_status(int conn_num, struct libtypec_connector_status
 
 int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp_type, char *pd_msg_resp)
 {
-    if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_pd_message_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_pd_message_ops(recipient, conn_num, num_bytes, resp_type, pd_msg_resp);
@@ -298,7 +325,7 @@ int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp
  */
 int libtypec_get_pdos (int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data)
 {
-     if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_pdos_ops )
         return -EIO;
 
     return cur_libtypec_os_backend->get_pdos_ops(conn_num,  partner, offset,  num_pdo,  src_snk, type, pdo_data);
@@ -315,7 +342,7 @@ int libtypec_get_pdos (int conn_num, int partner, int offset, int *num_pdo, int 
 int libtypec_get_bb_status(unsigned int *num_bb_instance)
 {
 
-   if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_bb_status )
         return -EIO;
 
     return cur_libtypec_os_backend->get_bb_status(num_bb_instance);
@@ -335,7 +362,7 @@ int libtypec_get_bb_status(unsigned int *num_bb_instance)
 int libtypec_get_bb_data(int bb_instance,char* bb_data)
 {
 
-   if (!cur_libtypec_os_backend)
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_bb_data )
         return -EIO;
 
     cur_libtypec_os_backend->get_bb_data(bb_instance,bb_data);

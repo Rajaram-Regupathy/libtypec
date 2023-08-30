@@ -37,11 +37,13 @@ SOFTWARE.
 
 #define SYSFS_TYPEC_PATH "/sys/class/typec"
 #define SYSFS_PSY_PATH "/sys/class/power_supply"
+#define UCSI_DEBUGFS_PATH "/sys/kernel/debug/usb/ucsi/USBC000:00"
 
 /**
  * @brief
  *
  */
+extern const struct libtypec_os_backend libtypec_lnx_dbgfs_backend;
 extern const struct libtypec_os_backend libtypec_lnx_sysfs_backend;
 
 struct libtypec_os_backend

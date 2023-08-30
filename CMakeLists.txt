@@ -8,7 +8,7 @@ enable_testing()
 # set arch-specific include dir
 set(CMAKE_INSTALL_INCLUDEDIR "include/${CMAKE_LIBRARY_ARCHITECTURE}")
 
-add_library(libtypec SHARED libtypec.c libtypec_sysfs_ops.c)
+add_library(libtypec SHARED libtypec.c libtypec_sysfs_ops.c libtypec_dbgfs_ops.c)
 
 set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2")
 set_target_properties(libtypec PROPERTIES
