@@ -512,6 +512,7 @@ static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typ
 			num_bb_if++;
 		}
 	}
+	fclose(fd);
 
 	return 0;
 }
