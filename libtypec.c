@@ -199,6 +199,8 @@ int libtypec_init(char **session_info)
 int libtypec_exit(void)
 {
     if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->exit )
+        return -EIO;
+
     /* clear session info */
 
     return cur_libtypec_os_backend->exit();
@@ -211,7 +213,7 @@ int libtypec_exit(void)
  *
  * \returns 0 on success
  */
-int libtypec_get_capability(struct libtypec_capabiliy_data *cap_data)
+int libtypec_get_capability(struct libtypec_capability_data *cap_data)
 {
     if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_capability_ops )
         return -EIO;
@@ -365,6 +367,6 @@ int libtypec_get_bb_data(int bb_instance,char* bb_data)
     if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->get_bb_data )
         return -EIO;
 
-    cur_libtypec_os_backend->get_bb_data(bb_instance,bb_data);
+    return cur_libtypec_os_backend->get_bb_data(bb_instance,bb_data);
 
 }

@@ -1335,7 +1335,7 @@ const char *tbt3_sop_pr_field_desc[][MAX_FIELDS] = {
   {NULL},
 };
 
-struct libtypec_capabiliy_data get_cap_data;
+struct libtypec_capability_data get_cap_data;
 struct libtypec_connector_cap_data conn_data;
 struct libtypec_connector_status conn_sts;
 struct libtypec_cable_property cable_prop;
@@ -1352,7 +1352,7 @@ void print_vdo(uint32_t vdo, int num_fields, const struct vdo_field vdo_fields[]
 
 void print_session_info();
 
-void print_ppm_capability(struct libtypec_capabiliy_data ppm_data);
+void print_ppm_capability(struct libtypec_capability_data ppm_data);
 
 void print_conn_capability(struct libtypec_connector_cap_data conn_data);
 

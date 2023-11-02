@@ -36,7 +36,7 @@ SOFTWARE.
 
 #include <stdint.h>
 
-struct libtypec_capabiliy_data
+struct libtypec_capability_data
 {
     unsigned int bmAttributes;
     unsigned bNumConnectors : 7;
@@ -293,7 +293,7 @@ int libtypec_exit(void);
  * @brief
  *
  */
-int libtypec_get_capability(struct libtypec_capabiliy_data *cap_data);
+int libtypec_get_capability(struct libtypec_capability_data *cap_data);
 int libtypec_get_conn_capability(int conn_num, struct libtypec_connector_cap_data *conn_cap_data);
 int libtypec_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data);
 int libtypec_get_cam_supported(int conn_num, char *cam_data);

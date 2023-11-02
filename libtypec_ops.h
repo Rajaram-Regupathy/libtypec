@@ -52,7 +52,7 @@ struct libtypec_os_backend
 
     int (*exit)(void);
 
-    int (*get_capability_ops)(struct libtypec_capabiliy_data *cap_data);
+    int (*get_capability_ops)(struct libtypec_capability_data *cap_data);
 
     int (*get_conn_capability_ops)(int conn_num, struct libtypec_connector_cap_data *conn_cap_data);
 

@@ -32,7 +32,7 @@
 #include "lstypec.h"
 #include "names.h"
 
-struct libtypec_capabiliy_data get_cap_data;
+struct libtypec_capability_data get_cap_data;
 struct libtypec_connector_cap_data conn_data;
 struct libtypec_connector_status conn_sts;
 struct libtypec_cable_property cable_prop;
@@ -183,7 +183,7 @@ void print_session_info()
     printf("  libtypec using %s\n", session_info[LIBTYPEC_OPS_INDEX]);
 }
 
-void print_ppm_capability(struct libtypec_capabiliy_data ppm_data)
+void print_ppm_capability(struct libtypec_capability_data ppm_data)
 {
     printf("\nUSB-C Platform Policy Manager Capability\n");
     printf("  Number of Connectors: %x\n", ppm_data.bNumConnectors);

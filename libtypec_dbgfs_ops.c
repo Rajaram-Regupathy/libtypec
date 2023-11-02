@@ -98,7 +98,7 @@ static int libtypec_dbgfs_exit(void)
 	return 0;
 }
 
-static int libtypec_dbgfs_get_capability_ops(struct libtypec_capabiliy_data *cap_data)
+static int libtypec_dbgfs_get_capability_ops(struct libtypec_capability_data *cap_data)
 {
     int ret=-1;
 	char buf[64];
@@ -146,8 +146,10 @@ static int libtypec_dbgfs_get_conn_capability_ops(int conn_num, struct libtypec_
             if(ret<31)
                 ret = -1;
 			conn_cap_data->opr_mode = buf[28] << 12 | buf[29] <<8 | buf[30] << 4 | buf[31];	
-		}
 	}
+    }
+    
+    return ret;
 }
 static int libtypec_dbgfs_get_alternate_modes(int recipient, int conn_num, struct altmode_data *alt_mode_data)
 {
@@ -186,7 +188,7 @@ static int libtypec_dbgfs_get_alternate_modes(int recipient, int conn_num, struc
 			{
 				ret = get_ucsi_response(buf);
 				if(ret<31)
-					ret = -1;
+					return -1;
 				
 				alt_mode_data[i].svid 	 = buf[28] << 12 | buf[29] <<8 | buf[30] << 4 | buf[31];
 				alt_mode_data[i].vdo 	 = buf[24] << 12 | buf[25] <<8 | buf[26] << 4 | buf[27];	
@@ -245,7 +247,7 @@ static int libtypec_dbgfs_get_pdos_ops(int conn_num, int partner, int offset, in
 			{
 				ret = get_ucsi_response(buf);
 				if(ret<31)
-					ret = -1;
+					return -1;
 				pdo_data[i] = buf[24] << 28 | buf[25] << 24 | buf[26] << 20 | buf[27] << 16 | buf[28] << 12 | buf[29] <<8 | buf[30] << 4 | buf[31];					
 				if(pdo_data[i] == 0)
 					break;

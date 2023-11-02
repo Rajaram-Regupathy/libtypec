@@ -173,7 +173,7 @@ int typecstatus_power_contract()
 {
        unsigned long tdp, bst_pwr;
        int ret;
-        struct libtypec_capabiliy_data get_cap_data;
+        struct libtypec_capability_data get_cap_data;
 
         // PPM Capabilities
         ret = libtypec_get_capability(&get_cap_data);

@@ -476,7 +476,7 @@ static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typ
 	FILE				*fd;
 
 	union {
-		char buf[255];
+		char buf[256];
 		struct usb_interface_descriptor intf;
 	} u_usb_if;
 
@@ -502,7 +502,13 @@ static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typ
 		&& u_usb_if.intf.bInterfaceProtocol == 0)
 		{
 			if(num_bb_if < MAX_BB_PATH_STORED)
+			{
+				int len =  strlen(usb_path);
+				if(len > 512 ) /*exceeds buffer size*/
+					return 0;
+				
 				strcpy(bb_dev_path[num_bb_if],usb_path);
+			}
 			num_bb_if++;
 		}
 	}
@@ -559,7 +565,7 @@ static int libtypec_sysfs_exit(void)
 	return 0;
 }
 
-static int libtypec_sysfs_get_capability_ops(struct libtypec_capabiliy_data *cap_data)
+static int libtypec_sysfs_get_capability_ops(struct libtypec_capability_data *cap_data)
 {
 	DIR *typec_path = opendir(SYSFS_TYPEC_PATH), *port_path;
 	struct dirent *typec_entry, *port_entry;
@@ -1045,8 +1051,11 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 static int libtypec_sysfs_get_bb_status(unsigned int *num_bb_instance)
 {
 	num_bb_if = 0;
+	
+	int fd_limit = getdtablesize() - 5;
 
-	if (ftw ("/dev/bus/usb/", count_billbrd_if, 0) != 0)
+
+	if (nftw ("/dev/bus/usb/", count_billbrd_if, fd_limit, 0) != 0)
 	{
 		return -EIO;
 	}
