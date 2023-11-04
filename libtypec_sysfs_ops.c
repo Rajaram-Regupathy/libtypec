@@ -45,7 +45,7 @@ SOFTWARE.
 #include <unistd.h>
 
 #define MAX_PORT_STR 7		/* port%d with 7 bit numPorts */
-#define MAX_PORT_MODE_STR 9 /* port%d with 7+2 bit numPorts */
+#define MAX_PORT_MODE_STR 7 /* port%d with 5+2 bit numPorts */
 #define OS_TYPE_CHROME 1
 
 static int num_bb_if;

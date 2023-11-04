@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(libtypec VERSION 0.3.1 DESCRIPTION "USB-Type C and USB Power Delivery class devices")
+project(libtypec VERSION 0.4.0 DESCRIPTION "USB-Type C and USB Power Delivery class devices")
 
 include(GNUInstallDirs)
 include(CTest)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(lstypec VERSION 0.3.1)
+project(lstypec VERSION 0.4.0)
 
 include(CTest)
 enable_testing()
