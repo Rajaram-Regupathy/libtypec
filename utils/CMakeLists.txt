@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(lstypec VERSION 0.4.0)
+project(libtypec_utils VERSION 0.4.0)
+
+configure_file(libtypec_utils_config.h.in libtypec_utils_config.h)
+
 
 include(CTest)
 enable_testing()

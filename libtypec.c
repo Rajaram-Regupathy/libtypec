@@ -148,7 +148,7 @@ int libtypec_init(char **session_info)
     struct statfs sb;
     char *ops_str[] = {"debugfs","sysfs"};
 
-    sprintf(ver_buf, "libtypec %d.%d", LIBTYPEC_MAJOR_VERSION, LIBTYPEC_MINOR_VERSION);
+    sprintf(ver_buf, "libtypec %d.%d.%d", LIBTYPEC_MAJOR_VERSION, LIBTYPEC_MINOR_VERSION,LIBTYPEC_PATCH_VERSION);
 
     session_info[LIBTYPEC_VERSION_INDEX] = ver_buf;
     session_info[LIBTYPEC_KERNEL_INDEX] = get_kernel_verion();

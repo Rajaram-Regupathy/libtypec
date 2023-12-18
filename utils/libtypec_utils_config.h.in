@@ -1,0 +1,3 @@
+#define LSTYPEC_MAJOR_VERSION @libtypec_utils_VERSION_MAJOR@
+#define LSTYPEC_MINOR_VERSION @libtypec_utils_VERSION_MINOR@
+#define LSTYPEC_PATCH_VERSION @libtypec_utils_VERSION_PATCH@

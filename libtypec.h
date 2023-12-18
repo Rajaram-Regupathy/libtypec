@@ -35,6 +35,7 @@ SOFTWARE.
 #define LIBTYPEC_H
 
 #include <stdint.h>
+#include "libtypec_config.h"
 
 struct libtypec_capability_data
 {
@@ -241,10 +242,6 @@ union libtypec_pps_sink
     }obj_spr_pps;
     
 };
-
-
-#define LIBTYPEC_MAJOR_VERSION 0
-#define LIBTYPEC_MINOR_VERSION 4
 
 #define LIBTYPEC_VERSION_INDEX 0
 #define LIBTYPEC_KERNEL_INDEX 1
