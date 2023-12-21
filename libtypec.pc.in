@@ -1,11 +1,11 @@
-prefix=/usr
-exec_prefix=/usr
-libdir=${exec_prefix}/lib/x86_64-linux-gnu
-includedir=${prefix}/
+prefix=@CPACK_PACKAGING_INSTALL_PREFIX@
+exec_prefix=@CPACK_PACKAGING_INSTALL_PREFIX@
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
-Name: libtypec
-Description: USB-Type C and USB Power Delivery class devices
-Version: 0.4.0
+Name: @CMAKE_PROJECT_NAME@
+Description: @PROJECT_DESCRIPTION@
+Version: @CMAKE_PROJECT_VERSION@
 
 Requires:
 Libs: -L${libdir} -llibtypec
