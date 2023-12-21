@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2022 Rajaram Regupathy <rajaram.regupathy@gmail.com>
+Copyright (c) 2023 Rajaram Regupathy <rajaram.regupathy@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,70 +23,27 @@ SOFTWARE.
 libtypec
 ++++++++
 
-USB-Type C and USB Power Delivery systems are with multiple specification versions, platform designs and microcontroller vendors to manage data, power and display.
+USB Type-C and USB Power Delivery systems are with multiple specification versions, platform designs and microcontroller vendors to manage data, power and display.
 
-This library defines a generic way for userspace System Software on Linux, Android, Chrome OS or Other OSes to build developer tools or other management applications for USB-Type C and USB Power Delivery class devices.
+This library defines a generic way for userspace System Software on Linux, Android, Chrome OS or Other OSes to build developer tools or other management applications for USB Type-C and USB Power Delivery class devices.
 
 Build Procedure
 +++++++++++++++
 
-This project was generated and developed using Microsoft Visual Studio Code (https://code.visualstudio.com/docs/cpp/cmake-linux). You could build using the steps given or follow the command line steps as below:
+You could build and generate packages using the steps given below:
 
 Step 1 - Generate build configuration for libtypec
 
-../libtypec$ cmake CMakeLists.txt 
--- The C compiler identification is GNU 7.5.0
--- The CXX compiler identification is GNU 7.5.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: /home/xps/Documents/libtypec
+../libtypec$ cmake -DCMAKE_BUILD_TYPE=Release .
 
-Step 2 - Build libtypec which would be generated in the ../bin folder
+Step 2 - Build libtypec and install library and binaries
 
-../libtypec$ make
-Scanning dependencies of target libtypec
-[ 33%] Building C object CMakeFiles/libtypec.dir/libtypec.c.o
-[ 66%] Building C object CMakeFiles/libtypec.dir/libtypec_sysfs_ops.c.o
-[100%] Linking C static library bin/liblibtypec.a
-[100%] Built target libtypec
+../libtypec$ sudo cmake --build . --target install --config Release
 
-Step 3 - Now generate build configuration for the ../utils directory
+Step 3 - Generate debian package as follows
 
-../libtypec/utils$ cmake CMakeLists.txt 
--- The C compiler identification is GNU 7.5.0
--- The CXX compiler identification is GNU 7.5.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: /home/xps/Documents/libtypec/utils
+../libtypec$ sudo cpack -G DEB
 
-Step 4 - Build ../utils directory to generate utils based on libtypec library
+Step 4 - Generate RPM package as follows
 
-../libtypec/utils$ make
-Scanning dependencies of target lstypec
-[ 50%] Building C object CMakeFiles/lstypec.dir/lstypec.c.o
-[100%] Linking C executable lstypec
-[100%] Built target lstypec
+../libtypec$ sudo cpack -G RPM
