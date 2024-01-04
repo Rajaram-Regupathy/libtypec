@@ -169,6 +169,7 @@ int typec_status_billboard()
 
             }
         }
+	return 0;
 }
 
 int typecstatus_power_contract()
