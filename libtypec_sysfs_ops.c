@@ -504,8 +504,10 @@ static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typ
 			if(num_bb_if < MAX_BB_PATH_STORED)
 			{
 				int len =  strlen(usb_path);
-				if(len > 512 ) /*exceeds buffer size*/
+				if(len > 512 ) { /*exceeds buffer size*/
+					fclose(fd);
 					return 0;
+				}
 				
 				strcpy(bb_dev_path[num_bb_if],usb_path);
 			}
