@@ -396,6 +396,7 @@ void print_identity_data(int recipient, union libtypec_discovered_identity id, s
           printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
           printf("    Product VDO 3: 0x%08x\n", id.disc_id.product_type_vdo3);
           print_vdo(((uint32_t) id.disc_id.product_type_vdo3), 6, pd3p1_dfp_fields, pd3p1_dfp_field_desc);
+          break;
         default:
           printf("    Product VDO 1: 0x%08x\n", id.disc_id.product_type_vdo1);
           printf("    Product VDO 2: 0x%08x\n", id.disc_id.product_type_vdo2);
