@@ -92,11 +92,13 @@ static unsigned long get_dword_from_path(char *path)
 
 	FILE *fp = fopen(path, "r");
 	
-    if (fp == NULL)
+	if (fp == NULL)
 		return -1;
 
-	if(fgets(buf, 64, fp) == NULL)
+	if(fgets(buf, 64, fp) == NULL) {
+		fclose(fp);
 		return -1;
+	}
 
 	dword = strtoul(buf, NULL, 10);
 
