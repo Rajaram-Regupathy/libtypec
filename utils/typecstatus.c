@@ -208,7 +208,7 @@ int typecstatus_power_contract()
                     printf("\tNo Power Contract on port %d\n",i);        
             }
         }
-
+	return 0;
 }
 
 /* Check all typec ports */
