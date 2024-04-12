@@ -476,7 +476,7 @@ static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 
 }
 
-static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typeflag)
+static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typeflag, struct FTW *ftw)
 {
 	FILE				*fd;
 
