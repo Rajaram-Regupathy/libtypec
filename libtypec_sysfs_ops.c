@@ -29,6 +29,11 @@ SOFTWARE.
  * @brief Functions for libtypec sysfs based operations
  */
 
+/**
+ *  required for enalbing nftw(), which is part of SUSv1.
+ */
+#define _XOPEN_SOURCE 500
+
 #include "libtypec_ops.h"
 #include <dirent.h>
 #include <stdio.h>
