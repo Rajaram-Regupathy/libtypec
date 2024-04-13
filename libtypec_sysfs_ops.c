@@ -29,6 +29,11 @@ SOFTWARE.
  * @brief Functions for libtypec sysfs based operations
  */
 
+/**
+ *  required for enalbing nftw(), which is part of SUSv1.
+ */
+#define _XOPEN_SOURCE 500
+
 #include "libtypec_ops.h"
 #include <dirent.h>
 #include <stdio.h>
@@ -471,7 +476,7 @@ static unsigned int get_fixed_supply_pdo(char *path, int src_snk)
 
 }
 
-static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typeflag)
+static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typeflag, struct FTW *ftw)
 {
 	FILE				*fd;
 

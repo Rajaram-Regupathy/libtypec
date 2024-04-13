@@ -59,4 +59,4 @@ configure_file(
 )
 
 install(FILES ${CMAKE_BINARY_DIR}/libtypec.pc
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
