@@ -509,8 +509,10 @@ static int count_billbrd_if(const char *usb_path, const struct stat *sb, int typ
 			if(num_bb_if < MAX_BB_PATH_STORED)
 			{
 				int len =  strlen(usb_path);
-				if(len > 512 ) /*exceeds buffer size*/
+				if(len > 512 ) { /*exceeds buffer size*/
+					fclose(fd);
 					return 0;
+				}
 				
 				strcpy(bb_dev_path[num_bb_if],usb_path);
 			}
@@ -981,7 +983,6 @@ static int libtypec_sysfs_get_pd_message_ops(int recipient, int conn_num, int nu
 
 static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, int *num_pdo, int src_snk, int type, unsigned int *pdo_data)
 {
-	struct stat sb;
 	int num_pdos_read = 0;
 	char path_str[512], port_content[512 + 256];
 	DIR *typec_path , *port_path;
@@ -989,7 +990,8 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 
 	snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d", conn_num);
 
-	if (lstat(path_str, &sb) == -1)
+	typec_path = opendir(path_str);
+        if (typec_path == NULL)
 	{
 		printf("Incorrect connector number : failed to open, %s", path_str);
 		return -1;
@@ -1009,12 +1011,6 @@ static int libtypec_sysfs_get_pdos_ops(int conn_num, int partner, int offset, in
 		else
 			snprintf(path_str, sizeof(path_str), SYSFS_TYPEC_PATH "/port%d-partner/usb_power_delivery/sink-capabilities", conn_num);		
 	}
-
-
-	typec_path = opendir(path_str);
-        
-        	if (typec_path == NULL)
-                		return -1;
 
 	while ((typec_entry = readdir(typec_path)))
 	{

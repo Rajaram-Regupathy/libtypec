@@ -92,11 +92,13 @@ static unsigned long get_dword_from_path(char *path)
 
 	FILE *fp = fopen(path, "r");
 	
-    if (fp == NULL)
+	if (fp == NULL)
 		return -1;
 
-	if(fgets(buf, 64, fp) == NULL)
+	if(fgets(buf, 64, fp) == NULL) {
+		fclose(fp);
 		return -1;
+	}
 
 	dword = strtoul(buf, NULL, 10);
 
@@ -167,6 +169,7 @@ int typec_status_billboard()
 
             }
         }
+	return 0;
 }
 
 int typecstatus_power_contract()
@@ -205,7 +208,7 @@ int typecstatus_power_contract()
                     printf("\tNo Power Contract on port %d\n",i);        
             }
         }
-
+	return 0;
 }
 
 /* Check all typec ports */
