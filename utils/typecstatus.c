@@ -133,40 +133,42 @@ int typec_status_billboard()
 
                 bb_loc = find_bb_bos_index(bb_data,ret);
 
-                struct bb_bos_descritor *bb_bos_desc = (struct bb_bos_descritor *)&bb_data[bb_loc];
-
-                printf("\tBillboard Device Version :  %x.%x\n",bb_bos_desc->cap_desc_bcd_ver[1],bb_bos_desc->cap_desc_bcd_ver[0]);
-
-                printf("\tNumber of Alternate Mode :  %d\n",bb_bos_desc->cap_desc_num_aum);
-
-                for(int x=0;x<bb_bos_desc->cap_desc_num_aum;x++)
+                if(bb_loc > 0 )
                 {
-                    int idx = 0, k=0, j=0;
-                    #define bmCONF_STR_ARR_MAX 4
+                    struct bb_bos_descritor *bb_bos_desc = (struct bb_bos_descritor *)&bb_data[bb_loc];
 
-                    char *bmconf_str_array[]= {"Unspecified Error","AUM not attempted","AUM attempt unsuccessful","AUM configuration successful","Undefined Configuration"};
+                    printf("\tBillboard Device Version :  %x.%x\n",bb_bos_desc->cap_desc_bcd_ver[1],bb_bos_desc->cap_desc_bcd_ver[0]);
 
-                    if( (x !=0) && ((x % 4) == 0))
+                    printf("\tNumber of Alternate Mode :  %d\n",bb_bos_desc->cap_desc_num_aum);
+
+                    for(int x=0;x<bb_bos_desc->cap_desc_num_aum;x++)
                     {
-                        j++;
-                        k=0;
+                        int idx = 0, k=0, j=0;
+                        #define bmCONF_STR_ARR_MAX 4
+
+                        char *bmconf_str_array[]= {"Unspecified Error","AUM not attempted","AUM attempt unsuccessful","AUM configuration successful","Undefined Configuration"};
+
+                        if( (x !=0) && ((x % 4) == 0))
+                        {
+                            j++;
+                            k=0;
+                        }
+
+                        idx = bb_bos_desc->cap_desc_bmconfig[j];
+
+                        idx = (idx >> k) & 0x3;
+
+                        k++;
+
+                        idx =  idx < bmCONF_STR_ARR_MAX ? idx : bmCONF_STR_ARR_MAX;
+
+                        char *aum = &bb_bos_desc->cap_desc_aum_array_start;
+
+                        aum = aum + (x*4);
+
+                        printf("\tAlternate Mode 0x%02X%02X in state :  %s\n",aum[1]&0xFF,aum[0]&0xFF,bmconf_str_array[idx]);
                     }
-
-                    idx = bb_bos_desc->cap_desc_bmconfig[j];
-
-                    idx = (idx >> k) & 0x3;
-
-                    k++;
-
-                    idx =  idx < bmCONF_STR_ARR_MAX ? idx : bmCONF_STR_ARR_MAX;
-
-                    char *aum = &bb_bos_desc->cap_desc_aum_array_start;
-
-                    aum = aum + (x*4);
-
-                    printf("\tAlternate Mode 0x%02X%02X in state :  %s\n",aum[1]&0xFF,aum[0]&0xFF,bmconf_str_array[idx]);
                 }
-
             }
         }
 	return 0;
