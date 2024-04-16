@@ -5,6 +5,8 @@ configure_file(libtypec_utils_config.h.in libtypec_utils_config.h)
 
 
 add_executable(lstypec lstypec.c names.c)
+target_include_directories(lstypec PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(typecstatus typecstatus.c names.c)
 
 target_link_libraries(lstypec PUBLIC libtypec udev)

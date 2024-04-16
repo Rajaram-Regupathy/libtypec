@@ -29,6 +29,7 @@ set(CPACK_SOURCE_IGNORE_FILES .git/ build/ bin/ CMakeCache.txt cmake_install.cma
 include(CPack)
 
 add_library(libtypec SHARED libtypec.c libtypec_sysfs_ops.c libtypec_dbgfs_ops.c)
+target_include_directories(libtypec PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 option(LIBTYPEC_STRICT_CFLAGS "Compile for strict warnings" ON)
 if(LIBTYPEC_STRICT_CFLAGS)
@@ -40,7 +41,7 @@ set_target_properties(libtypec PROPERTIES
 	OUTPUT_NAME "typec"
 	VERSION ${PROJECT_VERSION}
 	SOVERSION ${PROJECT_VERSION_MINOR}
-	PUBLIC_HEADER libtypec.h)
+	PUBLIC_HEADER "libtypec.h;${CMAKE_CURRENT_BINARY_DIR}/libtypec_config.h")
 
 add_subdirectory(utils)
 
