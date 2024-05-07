@@ -61,8 +61,8 @@ struct libtypec_connector_cap_data
     unsigned swap2snk : 1;
     unsigned reserved : 2;
     unsigned reservedmsb : 12;
-    unsigned partner_rev : 8;
-    unsigned cable_rev : 8;
+    unsigned partner_rev : 16;
+    unsigned cable_rev : 16;
 };
 
 struct altmode_data
@@ -283,6 +283,21 @@ union libtypec_pps_sink
 #define PDO_VARIABLE 2
 #define PDO_AUGMENTED 3
 
+enum usb_typec_event {
+    USBC_DEVICE_CONNECTED,
+    USBC_DEVICE_DISCONNECTED,
+    USBC_EVENT_COUNT
+};
+
+typedef void (*usb_typec_callback_t)(enum usb_typec_event event, void* data);
+
+typedef struct libtypec_notification_list{
+    usb_typec_callback_t cb_func;
+    void* data;
+    struct libtypec_notification_list* next;
+} libtypec_notification_list_t;
+
+
 int libtypec_init(char **session_info);
 int libtypec_exit(void);
 
@@ -302,5 +317,9 @@ int libtypec_get_pd_message(int recipient, int conn_num, int num_bytes, int resp
 
 int libtypec_get_bb_status(unsigned int *num_bb_instance);
 int libtypec_get_bb_data(int num_billboards,char* bb_data);
+
+int libtypec_register_typec_notification_callback(enum usb_typec_event event, usb_typec_callback_t cb, void* data);
+int libtypec_unregister_typec_notification_callback(enum usb_typec_event event, usb_typec_callback_t cb);
+void libtypec_monitor_events(void);
 
 #endif /*LIBTYPEC_H*/

@@ -50,6 +50,7 @@ static const struct libtypec_os_backend *cur_libtypec_os_backend;
 #define OPS_METHOD_DBGFS 0
 #define OPS_METHOD_SYSFS 1
 
+
 /**
  * \mainpage libtypec 0.4.0 API Reference
  *
@@ -369,4 +370,44 @@ int libtypec_get_bb_data(int bb_instance,char* bb_data)
 
     return cur_libtypec_os_backend->get_bb_data(bb_instance,bb_data);
 
+}
+int libtypec_register_typec_notification_callback(enum usb_typec_event event, usb_typec_callback_t cb, void* data)
+{
+    if (event >= USBC_EVENT_COUNT) {
+        fprintf(stderr, "Invalid event\n");
+        return -1;
+    }
+    libtypec_notification_list_t* node = malloc(sizeof(libtypec_notification_list_t));
+    if (!node) {
+        fprintf(stderr, "Failed to allocate memory for callback node\n");
+        return -1;
+    }
+    node->cb_func = cb;
+    node->data = data;
+    node->next = registered_callbacks[event];
+    registered_callbacks[event] = node;
+}
+int libtypec_unregister_callback(enum usb_typec_event event, usb_typec_callback_t cb) {
+    if (event >= USBC_EVENT_COUNT) {
+        fprintf(stderr, "Invalid event\n");
+        return -1;
+    }
+    libtypec_notification_list_t** node = &registered_callbacks[event];
+    while (*node) {
+        if ((*node)->cb_func == cb) {
+            libtypec_notification_list_t* next = (*node)->next;
+            free(*node);
+            *node = next;
+        } else {
+            node = &(*node)->next;
+        }
+    }
+}
+
+void libtypec_monitor_events(void)
+{
+    if (!cur_libtypec_os_backend || !cur_libtypec_os_backend->monitor_events )
+        return;
+
+    cur_libtypec_os_backend->monitor_events();
 }

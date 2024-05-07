@@ -48,6 +48,7 @@ SOFTWARE.
 #include <ftw.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libudev.h>
 
 #define MAX_PORT_STR 7		/* port%d with 7 bit numPorts */
 #define MAX_PORT_MODE_STR 7 /* port%d with 5+2 bit numPorts */
@@ -181,10 +182,10 @@ static short get_bcd_from_rev_file(char *path)
 	return bcd;
 }
 
-static char get_pd_rev(char *path)
+static int get_pd_rev(char *path)
 {
 	char buf[10];
-	char rev = 0;
+	int rev = 0;
 
 	FILE *fp = fopen(path, "r");
 
@@ -195,8 +196,7 @@ static char get_pd_rev(char *path)
 		        fclose(fp);
 			return -1;
                 }
-		rev = ((buf[0] - '0') << 4) | (buf[2] - '0');
-
+		rev = ((buf[0] - '0') << 8 ) | (buf[2] - '0');
 		fclose(fp);
 	}
 	return rev;
@@ -1079,6 +1079,41 @@ static int libtypec_sysfs_get_bb_data(int num_billboards,char* bb_data)
 	return ret;
 }
 
+void libtypec_lnx_monitor_udev_events() {
+    struct udev *udev = udev_new();
+    struct udev_monitor *mon = udev_monitor_new_from_netlink(udev, "udev");
+
+    udev_monitor_filter_add_match_subsystem_devtype(mon, "typec", NULL);
+    udev_monitor_enable_receiving(mon);
+
+    while (1) {
+        struct udev_device *dev = udev_monitor_receive_device(mon);
+        if (dev) {
+            const char *subsystem = udev_device_get_subsystem(dev);
+            enum usb_typec_event event;
+            if (strcmp(subsystem, "typec") == 0) {
+                // typec event
+                const char *action = udev_device_get_action(dev);
+                if (strcmp(action, "add") == 0) {
+                    event = USBC_DEVICE_CONNECTED;
+                } else if (strcmp(action, "remove") == 0) {
+                    event = USBC_DEVICE_DISCONNECTED;
+                }
+            }
+            udev_device_unref(dev);
+
+            // call all callbacks for this event
+            libtypec_notification_list_t* node = registered_callbacks[event];
+            while (node) {
+                node->cb_func(event, node->data);
+                node = node->next;
+            }
+        }
+    }
+
+    udev_unref(udev);
+}
+libtypec_notification_list_t* registered_callbacks[USBC_EVENT_COUNT] = {0};
 
 const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.init = libtypec_sysfs_init,
@@ -1094,4 +1129,5 @@ const struct libtypec_os_backend libtypec_lnx_sysfs_backend = {
 	.get_pd_message_ops = libtypec_sysfs_get_pd_message_ops,
 	.get_bb_status = libtypec_sysfs_get_bb_status,
 	.get_bb_data = libtypec_sysfs_get_bb_data,
+	.monitor_events = libtypec_lnx_monitor_udev_events
 };

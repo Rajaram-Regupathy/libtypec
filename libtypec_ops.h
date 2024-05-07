@@ -45,6 +45,7 @@ SOFTWARE.
  */
 extern const struct libtypec_os_backend libtypec_lnx_dbgfs_backend;
 extern const struct libtypec_os_backend libtypec_lnx_sysfs_backend;
+extern libtypec_notification_list_t* registered_callbacks[USBC_EVENT_COUNT];
 
 struct libtypec_os_backend
 {
@@ -73,6 +74,8 @@ struct libtypec_os_backend
     int (*get_bb_status)(unsigned int *num_bb_instance);
 
     int (*get_bb_data)(int num_billboards,char* bb_data);
+
+    void (*monitor_events)(void);
 };
 
 #endif /*LIBTYPEC_OPS_H*/
