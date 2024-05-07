@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.16.3)
 project(libtypec VERSION 0.5.0 DESCRIPTION "Library to interface with USB Type-C and USB Power Delivery class devices")
 
 
+# Distributions set arch-specific include dir by patching GNUInstallDirs
 include(GNUInstallDirs)
 
-# set arch-specific include dir
-set(CMAKE_INSTALL_INCLUDEDIR "include/${CMAKE_LIBRARY_ARCHITECTURE}")
-configure_file(libtypec_config.h.in libtypec_config.h)
+# Saying ${CMAKE_CURRENT_BINARY_DIR}/ here is redundant but more readable
+configure_file(libtypec_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/libtypec_config.h)
 
 include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSES")
@@ -14,7 +14,6 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 SET(CPACK_SET_DESTDIR "ON")
-set( CMAKE_INSTALL_PREFIX  "/usr")
 set(CPACK_PACKAGE_VENDOR "Rajaram Regupathy")
 set(CPACK_PACKAGE_CONTACT "rajaram.regupathy@gmail.com")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
@@ -24,28 +23,27 @@ set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Rajaram Regupathy")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/package)
+set(CPACK_PACKAGE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/package)
 set(CPACK_SOURCE_IGNORE_FILES .git/ build/ bin/ CMakeCache.txt cmake_install.cmake _CPack_Packages/ CMakeFiles/ package/ )
 include(CPack)
 
 add_library(libtypec SHARED libtypec.c libtypec_sysfs_ops.c libtypec_dbgfs_ops.c)
 
+target_include_directories(libtypec PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
 option(LIBTYPEC_STRICT_CFLAGS "Compile for strict warnings" ON)
 if(LIBTYPEC_STRICT_CFLAGS)
-    set(CMAKE_C_FLAGS "-g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2")
+    target_compile_options(libtypec PRIVATE -g -O2 -fstack-protector-strong -Wformat=1 -Werror=format-security -Wdate-time -fasynchronous-unwind-tables -D_FORTIFY_SOURCE=2)
 endif()
-list( APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib )
 
 set_target_properties(libtypec PROPERTIES
 	OUTPUT_NAME "typec"
 	VERSION ${PROJECT_VERSION}
 	SOVERSION ${PROJECT_VERSION_MINOR}
-	PUBLIC_HEADER libtypec.h)
+	PUBLIC_HEADER "libtypec.h;${CMAKE_CURRENT_BINARY_DIR}/libtypec_config.h")
 
 add_subdirectory(utils)
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 install(TARGETS libtypec lstypec typecstatus
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -54,9 +52,9 @@ install(TARGETS libtypec lstypec typecstatus
 
 configure_file(
     libtypec.pc.in
-    ${CMAKE_BINARY_DIR}/libtypec.pc
+    ${CMAKE_CURRENT_BINARY_DIR}/libtypec.pc
     @ONLY
 )
 
-install(FILES ${CMAKE_BINARY_DIR}/libtypec.pc
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libtypec.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

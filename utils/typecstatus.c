@@ -35,7 +35,7 @@ SOFTWARE.
 #include <unistd.h>
 #include <stdio.h>
 #include <getopt.h>
-#include "../libtypec.h"
+#include "libtypec.h"
 #include <stdlib.h>
 #include "names.h"
 
