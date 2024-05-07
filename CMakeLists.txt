@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
-project(libtypec VERSION 0.5.0 DESCRIPTION "Library to interface with USB Type-C and USB Power Delivery class devices")
+project(libtypec VERSION 0.5.1 DESCRIPTION "Library to interface with USB Type-C and USB Power Delivery class devices")
 
 
 # Distributions set arch-specific include dir by patching GNUInstallDirs
