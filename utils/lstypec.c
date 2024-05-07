@@ -176,22 +176,32 @@ void print_vdo(uint32_t vdo, int num_fields, const struct vdo_field vdo_fields[]
   }
 }
 
+/**
+ * Prints the session information for the lstypec library.
+ * The session information includes the library version, operating system, kernel version, 
+ * and library operations.
+ */
 void print_session_info()
 {
-    printf("lstypec %d.%d.%d Session Info\n", LSTYPEC_MAJOR_VERSION, LSTYPEC_MINOR_VERSION, LSTYPEC_PATCH_VERSION);
-    printf("  Using %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
-    printf("  %s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
-    printf("  libtypec using %s\n", session_info[LIBTYPEC_OPS_INDEX]);
+  printf("lstypec %d.%d.%d Session Info\n", LSTYPEC_MAJOR_VERSION, LSTYPEC_MINOR_VERSION, LSTYPEC_PATCH_VERSION);
+  printf("  Using %s\n", session_info[LIBTYPEC_VERSION_INDEX]);
+  printf("  %s with Kernel %s\n", session_info[LIBTYPEC_OS_INDEX], session_info[LIBTYPEC_KERNEL_INDEX]);
+  printf("  libtypec using %s\n", session_info[LIBTYPEC_OPS_INDEX]);
 }
 
+/**
+ * Prints the USB-C Platform Policy Manager capability data.
+ *
+ * @param ppm_data The structure containing the capability data.
+ */
 void print_ppm_capability(struct libtypec_capability_data ppm_data)
 {
-    printf("\nUSB-C Platform Policy Manager Capability\n");
-    printf("  Number of Connectors: %x\n", ppm_data.bNumConnectors);
-    printf("  Number of Alternate Modes: %x\n", ppm_data.bNumAltModes);
-    printf("  USB Power Delivery Revision: %x.%x\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
-    printf("  USB Type-C Revision:  %x.%x\n",(ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
-    printf("  USB BC Revision: %x.%x\n", (ppm_data.bcdBCVersion >> 8) & 0XFF, (ppm_data.bcdBCVersion) & 0XFF);
+  printf("\nUSB-C Platform Policy Manager Capability\n");
+  printf("  Number of Connectors: %x\n", ppm_data.bNumConnectors);
+  printf("  Number of Alternate Modes: %x\n", ppm_data.bNumAltModes);
+  printf("  USB Power Delivery Revision: %x.%x\n", (ppm_data.bcdPDVersion >> 8) & 0XFF, (ppm_data.bcdPDVersion) & 0XFF);
+  printf("  USB Type-C Revision:  %x.%x\n",(ppm_data.bcdTypeCVersion >> 8) & 0XFF, (ppm_data.bcdTypeCVersion) & 0XFF);
+  printf("  USB BC Revision: %x.%x\n", (ppm_data.bcdBCVersion >> 8) & 0XFF, (ppm_data.bcdBCVersion) & 0XFF);
 }
 
 void print_conn_capability(struct libtypec_connector_cap_data conn_data)
@@ -211,14 +221,30 @@ void print_cable_prop(struct libtypec_cable_property cable_prop, int conn_num)
     printf("    Cable Plug Type: %s\n", cable_plug_type[cable_prop.plug_end_type]);
 }
 
+void get_svid_string(uint32_t svid, char* str) {
+
+    switch (svid) {
+        case 0xFF01:
+            strcpy(str, "Display Alternate Mode");
+            break;
+        case 0x8087:
+            strcpy(str, "TBT Alternate Mode");
+            break;
+        default:
+            get_vendor_string(str, sizeof(str), svid);
+            break;
+    }
+}
+
 void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes, struct altmode_data *am_data)
 {
   char vendor_id[128];
 
   if (recipient == AM_CONNECTOR) {
     for (int i = 0; i < num_modes; i++) {
+      get_svid_string(am_data[i].svid,vendor_id);
       printf("  Local Mode %d:\n", i);
-      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    SVID: 0x%04x (%s)\n", am_data[i].svid,vendor_id);
       printf("    VDO: 0x%08x\n", am_data[i].vdo);
       if (verbose) {
         switch(am_data[i].svid){
@@ -239,8 +265,9 @@ void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes,
 
   if (recipient == AM_SOP) {
     for (int i = 0; i < num_modes; i++) {
+      get_svid_string(am_data[i].svid,vendor_id);
       printf("  Partner Mode %d:\n", i);
-      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    SVID: 0x%04x (%s)\n", am_data[i].svid,vendor_id);
       printf("    VDO: 0x%08x\n", am_data[i].vdo);
       if (verbose) {
         switch(am_data[i].svid){
@@ -261,8 +288,9 @@ void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes,
 
   if (recipient == AM_SOP_PR) {
     for (int i = 0; i < num_modes; i++) {
+      get_svid_string(am_data[i].svid,vendor_id);
       printf("  Cable Plug Modes %d:\n", i);
-      printf("    SVID: 0x%04x\n", am_data[i].svid);
+      printf("    SVID: 0x%04x (%s)\n", am_data[i].svid,vendor_id);
       printf("    VDO: 0x%08x\n", am_data[i].vdo);
 
       if (verbose) {
