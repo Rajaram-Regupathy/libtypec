@@ -386,6 +386,8 @@ int libtypec_register_typec_notification_callback(enum usb_typec_event event, us
     node->data = data;
     node->next = registered_callbacks[event];
     registered_callbacks[event] = node;
+
+    return 0;
 }
 int libtypec_unregister_callback(enum usb_typec_event event, usb_typec_callback_t cb) {
     if (event >= USBC_EVENT_COUNT) {
