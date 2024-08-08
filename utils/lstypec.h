@@ -1118,6 +1118,7 @@ const char *pd3p1_fixed_supply_src_field_desc[][MAX_FIELDS] = {
   {NULL},
   {NULL},
   {NULL},
+  {NULL},
 };
 
 // USB PD 3.1 Variable Supply PDO - Source (Section 6.4.1.2.3)
