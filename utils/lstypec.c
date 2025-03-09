@@ -170,8 +170,15 @@ void print_vdo(uint32_t vdo, int num_fields, const struct vdo_field vdo_fields[]
          get_vendor_string(vendor_str, sizeof(vendor_str), svid);
         printf(" (%s)\n", (vendor_str[0] == '\0' ? "unknown" : vendor_str));
       } else {
-        // No decoding
-        printf("\n");
+        int unit_step;
+        char unit_name[4];
+        if (sscanf(vdo_fields[i].name, "%*[^0-9]%d%3s units", &unit_step, unit_name) == 2) {
+          // decode unit
+          printf(" (%d%s)\n", field * unit_step, unit_name);
+        } else {
+          // No decoding
+          printf("\n");
+        }
       }
   }
 }
