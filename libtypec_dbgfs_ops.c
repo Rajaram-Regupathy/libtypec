@@ -193,7 +193,8 @@ static int libtypec_dbgfs_get_alternate_modes(int recipient, int conn_num, struc
 				alt_mode_data[i].svid 	 = buf[28] << 12 | buf[29] <<8 | buf[30] << 4 | buf[31];
 				alt_mode_data[i].vdo 	 = buf[24] << 12 | buf[25] <<8 | buf[26] << 4 | buf[27];	
 				
-				if(alt_mode_data[i].svid == 0)
+				if(alt_mode_data[i].svid == 0
+				|| (i > 0 && alt_mode_data[i].svid == alt_mode_data[i-1].svid && alt_mode_data[i].vdo == alt_mode_data[i-1].vdo))
 					break;
 			}
 			i++;
