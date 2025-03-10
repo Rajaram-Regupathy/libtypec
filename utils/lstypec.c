@@ -300,7 +300,7 @@ void print_alternate_mode_data(int recipient, uint32_t id_header, int num_modes,
           break;
         case 0xff01:
           if ((id_header & ACTIVE_CABLE_MASK) == ACTIVE_CABLE_COMP) {
-            print_vdo(am_data[i].vdo, 7, dp_alt_mode_active_cable_fields, dp_alt_mode_active_cable_field_desc);
+            print_vdo(am_data[i].vdo, 6, dp_alt_mode_active_cable_fields, dp_alt_mode_active_cable_field_desc);
           } else {
             get_vendor_string(vendor_id, sizeof(vendor_id), am_data[i].svid);
             printf("      SVID Decoding not supported for 0x%04x (%s)\n", am_data[i].svid, (vendor_id[0] == '\0' ? "unknown" : vendor_id));
